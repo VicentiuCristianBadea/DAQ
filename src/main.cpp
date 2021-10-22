@@ -2,6 +2,7 @@
 #include <string.h>
 #define onboard 13
 
+using namespace std;
 
 int count = 0;
 
@@ -17,6 +18,6 @@ void loop() {
   delay(1000);
   digitalWrite(onboard, HIGH);
   delay(1000);
-  Serial.println("loop completed: " + std::to_string(count));
+  Serial.println("loop completed: " + String(count));
   count = count + 1;
 }
