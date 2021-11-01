@@ -1,23 +1,34 @@
+#ifndef MAIN_CPP
+#define MAIN_CPP
 #include <Arduino.h>
 #include <string.h>
+#include "load_cell.cpp"
+
+
+
+// Define pins
 #define onboard 13
 
+
+// Define sensors
+
+
+
 using namespace std;
+
+
+LoadCell loadCell_1 = LoadCell(onboard, OUTPUT);
 
 int count = 0;
 
 void setup() {
   // put your setup code here, to run once:
-  pinMode(onboard, OUTPUT);
   Serial.begin(9600);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  digitalWrite(onboard, LOW);
-  delay(1000);
-  digitalWrite(onboard, HIGH);
-  delay(1000);
-  Serial.println("loop completed: " + String(count));
-  count = count + 1;
+  loadCell_1.blinkLED();
 }
+
+#endif
