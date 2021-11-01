@@ -31,8 +31,6 @@ class LoadCell{
             delay(1000);
         }
 
-
-
         int pin;
         int type;
 };

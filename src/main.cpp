@@ -10,10 +10,6 @@
 #define onboard 13
 
 
-// Define sensors
-
-
-
 using namespace std;
 
 
