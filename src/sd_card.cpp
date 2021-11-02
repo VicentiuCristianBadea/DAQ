@@ -9,19 +9,18 @@ class SD_card
 {
 
 public:
-    SD_card()
-    {
-        setupSD();
-    }
-
     void setupSD()
     {
         Serial.print("Initializing SD card...");
-        if (!SD.begin(10))
+        if (!SD.begin(53))
         {
-            Serial.println("initializing failed!");
-            while (1)
-                ;
+            
+            while (1){
+                Serial.println("initializing failed!");
+                delay(1000);
+            
+            }
+                
         }
         Serial.println("Initialization done.");
     }
@@ -33,10 +32,7 @@ public:
         if (myFile)
         {
             Serial.print("Writing to " + printFile + "... ");
-            for (int i = 0; i < 20; i++)
-            {
-                myFile.println(i);
-            }
+            myFile.println("Testing 1, 2, 3.");
             myFile.close();
             Serial.println("done.");
         }
