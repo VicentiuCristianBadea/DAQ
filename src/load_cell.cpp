@@ -1,42 +1,60 @@
 #ifndef LOAD_CELL_CPP
 #define LOAD_CELL_CPP
 #include <Arduino.h>
+#include "HX711.h"
+#include "string.h"
+
+
+
+using namespace std;
 
 class LoadCell
 {
 
 public:
-    LoadCell(int p, int t)
-    {
-        pin = p;
-        type = t;
-        setPinMode();
+    
+    void setupLoadCell(int dout_pin, int sck_pin, int timeout, int timer){
+        _dout_pin = dout_pin;
+        _sck_pin = sck_pin;
+        _timeout = timeout;
+        _timer = timer;
     }
 
-    void setPinMode()
-    {
-        pinMode(pin, type);
+    void loadCellBegin(){
+        _scale.begin(_dout_pin, _sck_pin);
     }
 
-    void setLow()
-    {
-        digitalWrite(pin, LOW);
-    }
-    void setHigh()
-    {
-        digitalWrite(pin, HIGH);
+    double readLoadDouble(){
+        long int reading;
+        if(_scale.wait_ready_timeout(_timeout)){
+            reading = _scale.read();
+            Serial.println("HX711 reading: ");
+            Serial.println(reading);
+        }else{
+            Serial.println("HX711 not found.");
+        }
+
+        return reading;
     }
 
-    void blinkLED()
-    {
-        setLow();
-        delay(1000);
-        setHigh();
-        delay(1000);
+    String readLoadString(){
+        
+        double temp = readLoadDouble();
+        String temp_string;
+        temp_string = String(temp, 8);
+        return temp_string;
     }
 
-    int pin;
-    int type;
+
+    private:
+
+        int _dout_pin;
+        int _sck_pin;
+        int _timeout;
+        int _timer;
+
+        HX711 _scale;
+
 };
 
 #endif

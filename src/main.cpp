@@ -5,31 +5,49 @@
 #include "load_cell.cpp"
 #include "sd_card.cpp"
 
-// Define pins
-#define onboard 13
+// Define pinouts and constant
+#include "definitions.cpp"
+
 
 using namespace std;
 
-LoadCell loadCell_1 = LoadCell(onboard, OUTPUT);
+LoadCell loadCell_1;
 SD_card sd;
 
+void setupSensors();
+void setupSDCard();
 
-int count = 0;
 
 void setup()
 {
   // put your setup code here, to run once:
   Serial.begin(9600);
 
-  sd = SD_card();
-  sd.setupSD();
+  setupSensors();
+  setupSDCard();  
 }
 
 void loop()
 {
   // put your main code here, to run repeatedly:
-  loadCell_1.blinkLED();
-  sd.writeSD("testfile");
+  setupSensors();
+  String line = loadCell_1.readLoadString();
+  sd.writeSD("testfile", line);
+}
+
+
+// setup functions
+void setupSensors(){
+  loadCell_1 = LoadCell();
+  loadCell_1.setupLoadCell(LOADCELL_DOUT_PIN, 
+                              LOADCELL_SCK_PIN, 
+                              TIMEOUT, 
+                              TIMER);   
+}
+
+void setupSDCard(){
+  sd = SD_card();
+  sd.setupSD();
 }
 
 #endif

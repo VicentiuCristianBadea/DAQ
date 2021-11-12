@@ -14,25 +14,22 @@ public:
         Serial.print("Initializing SD card...");
         if (!SD.begin(53))
         {
-            
             while (1){
                 Serial.println("initializing failed!");
                 delay(1000);
-            
-            }
-                
+            }       
         }
         Serial.println("Initialization done.");
     }
 
-    void writeSD(char file[])
+    void writeSD(char file[], String line)
     {
         myFile = SD.open(file, FILE_WRITE);
         String printFile = file;
         if (myFile)
         {
-            Serial.print("Writing to " + printFile + "... ");
-            myFile.println("Testing 1, 2, 3.");
+            Serial.print("Writing to " + printFile + ": " + line);
+            myFile.println(line);
             myFile.close();
             Serial.println("done.");
         }
