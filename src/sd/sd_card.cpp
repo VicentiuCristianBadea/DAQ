@@ -1,9 +1,10 @@
 #ifndef SD_CARD_CPP
 #define SD_CARD_CPP
 #include <Arduino.h>
-#include "SD.h"
 #include "SPI.h"
+#include "SD.h"
 #include "string.h"
+#include "../config/definitions.cpp"
 
 class SD_card
 {
@@ -12,11 +13,11 @@ public:
     void setupSD()
     {
         Serial.print("Initializing SD card...");
-        if (!SD.begin(53))
+        if (!SD.begin(SD_BEGIN_PIN))
         {
             while (1){
                 Serial.println("initializing failed!");
-                delay(1000);
+                delay(INIT_DELAY);
             }       
         }
         Serial.println("Initialization done.");
@@ -38,6 +39,10 @@ public:
             Serial.println("error opening " + printFile);
         }
     }
+
+    // void unitTestWrite(char file[], String line){
+    //     myFile = file.open()
+    // }
 
     File myFile;
 };

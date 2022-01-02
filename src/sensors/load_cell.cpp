@@ -3,6 +3,10 @@
 #include <Arduino.h>
 #include "HX711.h"
 #include "string.h"
+#include "../data/data.cpp"
+
+
+
 
 
 
@@ -22,9 +26,10 @@ public:
 
     void loadCellBegin(){
         _scale.begin(_dout_pin, _sck_pin);
+        Serial.println("Beginning LoadCell");
     }
 
-    double readLoadDouble(){
+    double readLoadDouble(int timer){
         long int reading;
         if(_scale.wait_ready_timeout(_timeout)){
             reading = _scale.read();
@@ -33,16 +38,16 @@ public:
         }else{
             Serial.println("HX711 not found.");
         }
-
+        delay(timer);
         return reading;
     }
 
-    String readLoadString(){
-        
-        double temp = readLoadDouble();
+    String readLoadString(Data data, int timer){
+        double temp = readLoadDouble(timer);
         String temp_string;
         temp_string = String(temp, 8);
-        return temp_string;
+        Serial.println("THIS IS STRING VALUE: " + temp_string);
+        return data.concatData(temp_string);
     }
 
 
