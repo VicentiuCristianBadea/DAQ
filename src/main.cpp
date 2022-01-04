@@ -25,29 +25,13 @@ void setupData();
 void setup()
 {
   
-  // TIMER 1 for interrupt frequency 120.00480019200768 Hz:
-  // cli(); // stop interrupts
-  // TCCR1A = 0; // set entire TCCR1A register to 0
-  // TCCR1B = 0; // same for TCCR1B
-  // TCNT1  = 0; // initialize counter value to 0
-  // // set compare match register for 120.00480019200768 Hz increments
-  // OCR1A = 16665; // = 16000000 / (8 * 120.00480019200768) - 1 (must be <65536)
-  // // turn on CTC mode
-  // TCCR1B |= (1 << WGM12);
-  // // Set CS12, CS11 and CS10 bits for 8 prescaler
-  // TCCR1B |= (0 << CS12) | (1 << CS11) | (0 << CS10);
-  // // enable timer compare interrupt
-  // TIMSK1 |= (1 << OCIE1A);
-  // sei(); // allow interrupts
-
-  
   pinMode(PC13, OUTPUT);
   Serial.begin(115200);
 
 
-  // setupSensors();
+  setupSensors();
   setupSDCard();  
-  // setupData();
+  setupData();
 }
 
 void loop()
@@ -55,6 +39,7 @@ void loop()
   Serial.println("Hello World");
   delay(1000);
   digitalWrite(PC13, HIGH);
+  sd.writeSD(TESTFILE, loadCell_1.readLoadString(data));
   delay(1000);
   digitalWrite(PC13, LOW);
   // Do nothing

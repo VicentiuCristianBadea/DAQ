@@ -9,7 +9,7 @@ class SD_card
 {
     public:
         void setupSD();
-        void writeSD(char *, String);
+        void writeSD(const char *, String);
 
     private:
         File myFile;

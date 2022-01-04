@@ -19,7 +19,7 @@ void LoadCell::loadCellBegin(){
     Serial.println("Beginning LoadCell");
 }
 
-double LoadCell::readLoadDouble(int timer){
+double LoadCell::readLoadDouble(){
     long int reading;
     if(_scale.wait_ready_timeout(_timeout)){
         reading = _scale.read();
@@ -28,12 +28,12 @@ double LoadCell::readLoadDouble(int timer){
     }else{
         Serial.println("HX711 not found.");
     }
-    delay(timer);
+    delay(_timer);
     return reading;
 }
 
-String LoadCell::readLoadString(Data data, int timer){
-    double temp = readLoadDouble(timer);
+String LoadCell::readLoadString(Data data){
+    double temp = readLoadDouble();
     String temp_string;
     temp_string = String(temp, 8);
     Serial.println("THIS IS STRING VALUE: " + temp_string);

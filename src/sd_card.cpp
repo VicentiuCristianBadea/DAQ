@@ -20,7 +20,7 @@ void SD_card::setupSD()
     Serial.println("Initialization done.");
 }
 
-void SD_card::writeSD(char *file, String line)
+void SD_card::writeSD(const char *file, String line)
 {
     myFile = SD.open(file, FILE_WRITE);
     String printFile = file;

@@ -14,8 +14,8 @@ class LoadCell
 
         void setupLoadCell(int, int, int, int);
         void loadCellBegin();
-        double readLoadDouble(int);
-        String readLoadString(Data, int);
+        double readLoadDouble();
+        String readLoadString(Data);
 
 
     private:
