@@ -1,3 +1,8 @@
+#ifndef DEFINITIONS_H
+#define DEFINITIONS_H
+
+#include <Arduino.h>
+
 // FILE NAMES
 /***********************************/
 
@@ -13,10 +18,7 @@ const int LOADCELL_DOUT_PIN = 2;
 const int LOADCELL_SCK_PIN = 3;
 
 /*  SD              */
-const int SD_BEGIN_PIN = 14;
-
-
-
+const int SD_BEGIN_PIN = PA4;
 
 // VARIABLES
 /***********************************/
@@ -31,4 +33,4 @@ const int INIT_DELAY = 1000;
 /*  TIMER0          */
 
 
-
+#endif // DEFINITIONS_H
