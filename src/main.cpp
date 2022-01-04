@@ -1,13 +1,13 @@
-#ifndef MAIN_CPP
-#define MAIN_CPP
 #include <Arduino.h>
 #include <string.h>
-#include "sensors/load_cell.cpp"
-#include "sd/sd_card.cpp"
-#include "data/data.cpp"
 #include <math.h>
 #include <Wire.h>
-// #include "config/definitions.cpp"
+
+#include "load_cell.h"
+#include "sd_card.h"
+#include "data.h"
+
+#include "config/definitions.h"
 
 
 using namespace std;
@@ -93,5 +93,3 @@ void setupData(){
 //   sd.writeSD(TESTFILE, fakeData);
 // }
 
-
-#endif
