@@ -6,6 +6,7 @@
 #include "sd/sd_card.cpp"
 #include "data/data.cpp"
 #include <math.h>
+#include <Wire.h>
 // #include "config/definitions.cpp"
 
 
@@ -39,11 +40,13 @@ void setup()
   // TIMSK1 |= (1 << OCIE1A);
   // sei(); // allow interrupts
 
+  
   pinMode(PC13, OUTPUT);
   Serial.begin(115200);
 
+
   // setupSensors();
-  // setupSDCard();  
+  setupSDCard();  
   // setupData();
 }
 

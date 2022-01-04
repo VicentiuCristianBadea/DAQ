@@ -13,7 +13,7 @@ const int LOADCELL_DOUT_PIN = 2;
 const int LOADCELL_SCK_PIN = 3;
 
 /*  SD              */
-const int SD_BEGIN_PIN = 53;
+const int SD_BEGIN_PIN = 14;
 
 
 

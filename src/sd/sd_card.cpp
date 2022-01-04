@@ -12,6 +12,8 @@ class SD_card
 public:
     void setupSD()
     {
+        SPI.setModule(2);
+
         Serial.print("Initializing SD card...");
         if (!SD.begin(SD_BEGIN_PIN))
         {
