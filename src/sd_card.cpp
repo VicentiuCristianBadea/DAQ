@@ -32,17 +32,10 @@ void SD_card::writeSD(char buffer[][100], const char *file)
         for(int i = 0; i < 1000; i++){
             Serial.println(buffer[i]);
             myFile.println(buffer[i]);
-            // if(buffer[i][0] == '\n'){
-            //     break;
-            // }
         }
 
         myFile.close();
-        // Serial.print("Writing to " + printFile + ": " + line);
         Serial.println("Wrote buffer to file");
-        // myFile.println(line);
-        // // myFile.close();
-        // Serial.println("done.");
     }
     else
     {
