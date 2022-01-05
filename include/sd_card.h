@@ -8,8 +8,8 @@
 class SD_card
 {
     public:
-        void setupSD(const char *);
-        void writeSD(String);
+        void setupSD();
+        void writeSD(char[][100], const char *);
 
     private:
         File myFile;

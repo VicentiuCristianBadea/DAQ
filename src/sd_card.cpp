@@ -5,11 +5,10 @@
 
 #include "config/definitions.h"
 
-void SD_card::setupSD(const char *file)
+void SD_card::setupSD()
 {
     saving = false;
     dataCount = 0;
-    String printFile = file;
 
     Serial.print("Initializing SD card...");
     if (!SD.begin(SPI_HALF_SPEED, SD_BEGIN_PIN))
@@ -19,18 +18,31 @@ void SD_card::setupSD(const char *file)
             delay(INIT_DELAY);
         }
     }
-    myFile = SD.open(file, FILE_WRITE);
+    
     Serial.println("Initialization done.");
 }
 
-void SD_card::writeSD(String line)
+void SD_card::writeSD(char buffer[][100], const char *file)
 {
+
+    myFile = SD.open(file, FILE_WRITE);
+
     if (myFile)
     {
-        Serial.print("Writing to " + printFile + ": " + line);
-        myFile.println(line);
-        // myFile.close();
-        Serial.println("done.");
+        for(int i = 0; i < 1000; i++){
+            Serial.println(buffer[i]);
+            myFile.println(buffer[i]);
+            // if(buffer[i][0] == '\n'){
+            //     break;
+            // }
+        }
+
+        myFile.close();
+        // Serial.print("Writing to " + printFile + ": " + line);
+        Serial.println("Wrote buffer to file");
+        // myFile.println(line);
+        // // myFile.close();
+        // Serial.println("done.");
     }
     else
     {
@@ -38,21 +50,3 @@ void SD_card::writeSD(String line)
     }
 }
 
-// void SD_card::incrementDataCount(){
-//     if(dataCount < 1000){
-//         dataCount++;
-//     }else{
-//         dataCount = 0;
-//         saving = true;
-//         save();
-//     }
-// }
-
-// void SD_card::save(){
-//     myFile.close();
-//     myFile = SD.open()
-// }
-
-// void SD_card::unitTestWrite(char file[], String line){
-//     myFile = file.open()
-// }

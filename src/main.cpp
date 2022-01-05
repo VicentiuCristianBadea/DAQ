@@ -12,12 +12,17 @@
 
 using namespace std;
 
+bool READ_FLAG = false;
+char buffer[1000][100];
+
+
 LoadCell loadCell_1;
 LoadCell loadCell_2;
 SD_card sd;
 Data data;
 
 int input_freq;
+int counter = 0;
 
 void setupSensors();
 void setupSDCard();
@@ -27,6 +32,9 @@ void ledON();
 void ledOFF();
 void heartBeat();
 void interruptReadData();
+void readToBuffer();
+bool checkBufferSize();
+
 
 void setup()
 {
@@ -40,12 +48,12 @@ void setup()
   setupData();
 
 
-  TIM_TypeDef* Instance = TIM5;
+  TIM_TypeDef* Instance = TIM4;
   HardwareTimer * MyTim = new HardwareTimer(Instance);
  
   MyTim->pause();
   MyTim->refresh();
-  MyTim->setOverflow(1000, MICROSEC_FORMAT);
+  MyTim->setOverflow(12500, MICROSEC_FORMAT);
   MyTim->attachInterrupt(interruptReadData);
   MyTim->resume();
 
@@ -55,7 +63,13 @@ void setup()
 
 void loop()
 {
-  // heartBeat();
+  if(READ_FLAG){
+    readToBuffer();
+  }
+
+  if(checkBufferSize()){
+    sd.writeSD(buffer, TESTFILE);
+  }
 }
 
 
@@ -73,7 +87,7 @@ void createSensor(LoadCell &loadCell, int dout_pin){
 
 void setupSDCard(){
   sd = SD_card();
-  sd.setupSD(TESTFILE);
+  sd.setupSD();
 }
 
 void setupData(){
@@ -99,31 +113,24 @@ void heartBeat(){
 }
 
 void interruptReadData(){
+  READ_FLAG = true;
+}
+
+void readToBuffer(){
   data.emptyData();
   data.concatData(String(millis()));
   data.concatData(loadCell_1.readLoadString());
   data.concatData(loadCell_2.readLoadString());
-  Serial.println(String(millis()));
-  Serial.println(input_freq);
-  // sd.writeSD(data.getData());
+  strcpy(buffer[counter], data.getData().c_str());
+  counter++;
+  READ_FLAG = false;
 }
 
-// ISR(TIMER1_COMPA_vect){
-//   // String data1 = loadCell_1.readLoadString(data, TIMER);
-//   // sd.writeSD(TESTFILE, data1);
-//   Serial.println(millis());
-// }
-
-
-// void TIM4_IRQHandler(){
-
-//   Serial.println("This is the interrupt firing");
-//   TIM4->SR &= ~TIM_SR_UIF;
-// }
-
-// void unitTestFile(){
-//   delay(10)
-//   String fakeData = random(10).toString();
-//   sd.writeSD(TESTFILE, fakeData);
-// }
+bool checkBufferSize(){
+  if(counter > 995){
+    counter = 0;
+    return true;
+  }
+  return false;
+}
 

@@ -4,7 +4,6 @@
 
 #include "load_cell.h"
 
-
 using namespace std;
 
 void LoadCell::setupLoadCell(int dout_pin, int sck_pin, int timeout){
@@ -20,12 +19,8 @@ void LoadCell::loadCellBegin(){
 
 double LoadCell::readLoadDouble(){
     long int reading;
-    if(_scale.wait_ready_timeout(_timeout)){
+    if(_scale.is_ready()){
         reading = _scale.read();
-        // Serial.println("HX711 reading: ");
-        // Serial.println(reading);
-    }else{
-        Serial.println("HX711 not found.");
     }
     return reading;
 }
