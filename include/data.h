@@ -9,9 +9,11 @@ class Data
     public:
         Data();
 
-        String concatData(String);
-        String getData();
+        void concatData(String);
         void emptyData();
+        
+        String getData();
+        
 
     private:
         String data;

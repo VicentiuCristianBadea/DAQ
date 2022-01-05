@@ -8,11 +8,14 @@
 class SD_card
 {
     public:
-        void setupSD();
-        void writeSD(const char *, String);
+        void setupSD(const char *);
+        void writeSD(String);
 
     private:
         File myFile;
+        String printFile;
+        int dataCount;
+        bool saving;
 };
 
 

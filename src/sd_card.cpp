@@ -5,9 +5,11 @@
 
 #include "config/definitions.h"
 
-void SD_card::setupSD()
+void SD_card::setupSD(const char *file)
 {
-    // SPI.setModule(2);
+    saving = false;
+    dataCount = 0;
+    String printFile = file;
 
     Serial.print("Initializing SD card...");
     if (!SD.begin(SPI_HALF_SPEED, SD_BEGIN_PIN))
@@ -17,18 +19,17 @@ void SD_card::setupSD()
             delay(INIT_DELAY);
         }
     }
+    myFile = SD.open(file, FILE_WRITE);
     Serial.println("Initialization done.");
 }
 
-void SD_card::writeSD(const char *file, String line)
+void SD_card::writeSD(String line)
 {
-    myFile = SD.open(file, FILE_WRITE);
-    String printFile = file;
     if (myFile)
     {
         Serial.print("Writing to " + printFile + ": " + line);
         myFile.println(line);
-        myFile.close();
+        // myFile.close();
         Serial.println("done.");
     }
     else
@@ -36,6 +37,21 @@ void SD_card::writeSD(const char *file, String line)
         Serial.println("error opening " + printFile);
     }
 }
+
+// void SD_card::incrementDataCount(){
+//     if(dataCount < 1000){
+//         dataCount++;
+//     }else{
+//         dataCount = 0;
+//         saving = true;
+//         save();
+//     }
+// }
+
+// void SD_card::save(){
+//     myFile.close();
+//     myFile = SD.open()
+// }
 
 // void SD_card::unitTestWrite(char file[], String line){
 //     myFile = file.open()

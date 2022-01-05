@@ -12,10 +12,10 @@ class LoadCell
 
     public:
 
-        void setupLoadCell(int, int, int, int);
+        void setupLoadCell(int, int, int);
         void loadCellBegin();
         double readLoadDouble();
-        String readLoadString(Data);
+        String readLoadString();
 
 
     private:

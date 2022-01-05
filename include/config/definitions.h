@@ -14,10 +14,11 @@ const char TESTFILE[9] = "testfile";
 /***********************************/
 
 
-#define LOADCELL_DOUT_PIN   PA0
-#define LOADCELL_SCK_PIN    PB10
+#define LOADCELL_DOUT_PIN_1     PA0
+#define LOADCELL_DOUT_PIN_2     PA1
+#define LOADCELL_SCK_PIN        PB10
 
-#define SD_BEGIN_PIN        PA4
+#define SD_BEGIN_PIN            PA4
 
 
 // VARIABLES
@@ -29,7 +30,8 @@ const char TESTFILE[9] = "testfile";
 // SD
 #define INIT_DELAY          1000
 
-// TIMER0
+// TIMER4
+#define LOADCELL_TIMER_FREQ 100
 
 
 #endif // DEFINITIONS_H
