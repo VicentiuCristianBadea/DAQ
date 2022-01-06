@@ -72,10 +72,7 @@ void setup()
 
   input_freq = MyTim->getTimerClkFreq()/ MyTim->getPrescaleFactor();
 
-  
-
-  
-TIM_TypeDef *InstanceLeft = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(left), PinMap_PWM);
+  TIM_TypeDef *InstanceLeft = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(left), PinMap_PWM);
   channelLeft = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(left), PinMap_PWM));
   MotorLeft = new HardwareTimer(InstanceLeft);
 
@@ -84,28 +81,10 @@ TIM_TypeDef *InstanceLeft = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName
   MotorRight = new HardwareTimer(InstanceRight);
   
 
-  
-  // MotorTimer->setMode(channel, TIMER_OUTPUT_COMPARE_PWM1, PB4);
-  // MotorTimer->setOverflow(100000, MICROSEC_FORMAT);
-  // MotorTimer->setCaptureCompare(channel, 50, PERCENT_COMPARE_FORMAT);
-  
-  
-  MotorLeft->setPWM(channelLeft, left, 1000, 100);
   MotorRight->setPWM(channelRight, right, 1000, 100);
-
-  // MotorRight->pause();
   MotorRight->pauseChannel(channelRight);
-  delay(10);
-  // MotorTimer->pause();
-  // MotorTimer->refresh();
-
-  // myservo.attach(PA15);
-
-  // pinMode(left, OUTPUT);
-  // analogWrite(left, 255);
-
-  // pinMode(right, OUTPUT);
-  // analogWrite(right, 0);
+  MotorLeft->setPWM(channelLeft, left, 1000, 100);
+  
 
   pinMode(PA15, OUTPUT);
   analogWrite(PA15, 0);
@@ -114,7 +93,6 @@ TIM_TypeDef *InstanceLeft = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName
 
 void loop()
 {
-  delay(1000);
   // if(READ_FLAG){
   //   readToBuffer();
   // }
@@ -123,35 +101,17 @@ void loop()
   //   sd.writeSD(buffer, TESTFILE);
   // }
 
-  // for (pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
-  //   // in steps of 1 degree
-  //   myservo.write(pos);              // tell servo to go to position in variable 'pos'
-  //   delay(15);                       // waits 15ms for the servo to reach the position
-  // }
-  // for (pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
-  //   myservo.write(pos);              // tell servo to go to position in variable 'pos'
-  //   delay(15);                       // waits 15ms for the servo to reach the position
-  // }
-  // myservo.write(250);
-  // delay(1000);
-  // myservo.write(0);
-  // delay(1000);
-
   analogWrite(PA15, 255);
   delay(1000);
   analogWrite(PA15, 0);
   delay(1000);
 
   if(changeOrientation){
-    // digitalWrite(left, LOW);
-    // digitalWrite(right, HIGH);
     MotorLeft->pauseChannel(channelLeft);
     delay(100);
     MotorRight->resume();
     changeOrientation = false;
   }else{
-    // digitalWrite(right, LOW);
-    // digitalWrite(left, HIGH);
     MotorRight->pauseChannel(channelRight);
     delay(100);
     MotorLeft->resume();
