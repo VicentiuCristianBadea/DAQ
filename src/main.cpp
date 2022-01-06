@@ -39,6 +39,14 @@ bool checkBufferSize();
 
 Servo myservo;
 
+bool changeOrientation = true;
+#define left PB3
+#define right PB4
+HardwareTimer *MotorLeft;
+HardwareTimer *MotorRight;
+
+uint32_t channelLeft;
+uint32_t channelRight;
 
 
 void setup()
@@ -66,29 +74,47 @@ void setup()
 
   
 
-  // TIM_TypeDef *Instance2 = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(PB4), PinMap_PWM);
-  // uint32_t channel = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(PB4), PinMap_PWM));
+  
+TIM_TypeDef *InstanceLeft = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(left), PinMap_PWM);
+  channelLeft = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(left), PinMap_PWM));
+  MotorLeft = new HardwareTimer(InstanceLeft);
 
-  // HardwareTimer *MotorTimer = new HardwareTimer(Instance2);
+  TIM_TypeDef *InstanceRight = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(right), PinMap_PWM);
+  channelRight = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(right), PinMap_PWM));
+  MotorRight = new HardwareTimer(InstanceRight);
+  
+
   
   // MotorTimer->setMode(channel, TIMER_OUTPUT_COMPARE_PWM1, PB4);
   // MotorTimer->setOverflow(100000, MICROSEC_FORMAT);
   // MotorTimer->setCaptureCompare(channel, 50, PERCENT_COMPARE_FORMAT);
   
   
-  // MotorTimer->setPWM(channel, PB4, 5, 10);
+  MotorLeft->setPWM(channelLeft, left, 1000, 100);
+  MotorRight->setPWM(channelRight, right, 1000, 100);
+
+  // MotorRight->pause();
+  MotorRight->pauseChannel(channelRight);
+  delay(10);
   // MotorTimer->pause();
   // MotorTimer->refresh();
 
   // myservo.attach(PA15);
 
+  // pinMode(left, OUTPUT);
+  // analogWrite(left, 255);
+
+  // pinMode(right, OUTPUT);
+  // analogWrite(right, 0);
+
   pinMode(PA15, OUTPUT);
-  analogWrite(PA15, LOW);
+  analogWrite(PA15, 0);
 }
 
 
 void loop()
 {
+  delay(1000);
   // if(READ_FLAG){
   //   readToBuffer();
   // }
@@ -115,6 +141,23 @@ void loop()
   delay(1000);
   analogWrite(PA15, 0);
   delay(1000);
+
+  if(changeOrientation){
+    // digitalWrite(left, LOW);
+    // digitalWrite(right, HIGH);
+    MotorLeft->pauseChannel(channelLeft);
+    delay(100);
+    MotorRight->resume();
+    changeOrientation = false;
+  }else{
+    // digitalWrite(right, LOW);
+    // digitalWrite(left, HIGH);
+    MotorRight->pauseChannel(channelRight);
+    delay(100);
+    MotorLeft->resume();
+    changeOrientation = true;
+  }
+  delay(10);
 
 }
 
