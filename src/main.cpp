@@ -13,114 +13,141 @@
 
 using namespace std;
 
-bool READ_FLAG = false;
-char buffer[1000][100];
-
-
-LoadCell loadCell_1;
-LoadCell loadCell_2;
-SD_card sd;
-Data data;
-
-int input_freq;
-int counter = 0;
-int pos = 0;
-
+// PROTOTYPES
 void setupSensors();
 void setupSDCard();
 void setupData();
 void createSensor(LoadCell&, int);
-void ledON();
-void ledOFF();
-void heartBeat();
 void interruptReadData();
 void readToBuffer();
 bool checkBufferSize();
+void setMotor(int, int);
+void readEncoder();
+void computePID();
+void moveToPosDEBUG();
+void moveSinWave();
+void setupLoadCellTimer();
+void setupMotor1();
 
-Servo myservo;
-
-bool changeOrientation = true;
-#define left PB3
-#define right PB4
+// MOTOR 1
 HardwareTimer *MotorLeft;
 HardwareTimer *MotorRight;
-
 uint32_t channelLeft;
 uint32_t channelRight;
+int pos = 0;
+long prevT = 0;
+float eprev = 0;
+float eintegral = 0;
+int target = 0;
+
+// LOAD CELLS
+LoadCell loadCell_1;
+LoadCell loadCell_2;
+
+// SD CARD
+SD_card sd;
+Data data;
+int counter = 0;
+bool READ_FLAG = false;
+char buffer[1000][100];
+
 
 
 void setup()
 {
   
+  /*  Check if alive  */
   pinMode(PC13, OUTPUT);
+
+  /*  Fix baudrate  */
   Serial.begin(115200);
 
 
+  /*  Setup hardware */
   setupSensors();
   setupSDCard();  
   setupData();
 
+  /*  Setup timers */
+  setupLoadCellTimer();
 
-  TIM_TypeDef* Instance = TIM4;
-  HardwareTimer * MyTim = new HardwareTimer(Instance);
- 
-  MyTim->pause();
-  MyTim->refresh();
-  MyTim->setOverflow(80, HERTZ_FORMAT);
-  MyTim->attachInterrupt(interruptReadData);
-  MyTim->resume();
-
-  input_freq = MyTim->getTimerClkFreq()/ MyTim->getPrescaleFactor();
-
-  TIM_TypeDef *InstanceLeft = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(left), PinMap_PWM);
-  channelLeft = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(left), PinMap_PWM));
-  MotorLeft = new HardwareTimer(InstanceLeft);
-
-  TIM_TypeDef *InstanceRight = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(right), PinMap_PWM);
-  channelRight = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(right), PinMap_PWM));
-  MotorRight = new HardwareTimer(InstanceRight);
+  /*  Setup motors */
+  setupMotor1();
   
-
-  MotorRight->setPWM(channelRight, right, 1000, 100);
-  MotorRight->pauseChannel(channelRight);
-  MotorLeft->setPWM(channelLeft, left, 1000, 100);
-  
-
-  pinMode(PA15, OUTPUT);
-  analogWrite(PA15, 0);
 }
 
 
 void loop()
 {
-  // if(READ_FLAG){
-  //   readToBuffer();
-  // }
+  /*  LOADCELL CALIBRATION */
+  // loadCell_1.calibrate();
 
-  // if(checkBufferSize()){
-  //   sd.writeSD(buffer, TESTFILE);
-  // }
+  /*  LOADCELL READ DATA */
+  // readToBuffer();
 
-  analogWrite(PA15, 255);
-  delay(1000);
-  analogWrite(PA15, 0);
-  delay(1000);
+  /*  MOVE MOTOR TO POSITION - DEBUG */
+  moveToPosDEBUG();
 
-  if(changeOrientation){
-    MotorLeft->pauseChannel(channelLeft);
-    delay(100);
-    MotorRight->resume();
-    changeOrientation = false;
-  }else{
-    MotorRight->pauseChannel(channelRight);
-    delay(100);
-    MotorLeft->resume();
-    changeOrientation = true;
-  }
-  delay(10);
-
+  /*  MOVE MOTOR SIN WAVE - DEBUG */
+  // moveSinWave();
 }
 
+void computePID(){
+  long currT = micros();
+  float deltaT = ((float)(currT-prevT))/1.0e6;
+  prevT = currT;
+
+  int e = pos-target;
+
+  float dedt = (e - eprev)/(deltaT);
+
+  eintegral = eintegral + e*deltaT;
+
+  float u = kp*e + kd*dedt + ki*eintegral;
+
+  float pwr = fabs(u);
+  if(pwr>255){
+    pwr = 255;
+  }
+
+  int dir = 1;
+  if(u<0){
+    dir = -1;
+  }
+
+  setMotor(dir, pwr);
+
+  eprev = e;
+
+  Serial.print(target);
+  Serial.print(" ");
+  Serial.print(pos);
+  Serial.println();
+}
+
+void readEncoder(){
+  int b = digitalRead(m1_encoder_B);
+  if(b>0){
+    pos++;
+  }
+  else{
+    pos--;
+  }
+}
+
+void setMotor(int dir, int pwr){
+  analogWrite(motorPin, pwr);
+  if(dir == turnClockWise){   // Turn right
+    MotorLeft->pauseChannel(channelLeft);
+    MotorRight->resume();
+  }else if(dir == turnCounterClockWise){ //Turn left
+    MotorRight->pauseChannel(channelRight);
+    MotorLeft->resume();
+  }else{
+    MotorLeft->pauseChannel(channelLeft);
+    MotorRight->pauseChannel(channelRight);
+  }
+}
 
 // setup functions
 void setupSensors(){
@@ -143,36 +170,27 @@ void setupData(){
   data = Data();
 }
 
-void ledON(){
-  digitalWrite(PC13, HIGH);
-}
-
-void ledOFF(){
-  digitalWrite(PC13, LOW);
-}
-
-void heartBeat(){
-  ledON();
-  delay(100);
-  ledOFF();
-  delay(100);
-  ledON();
-  delay(300);
-  ledOFF();
-}
-
 void interruptReadData(){
   READ_FLAG = true;
 }
 
 void readToBuffer(){
-  data.emptyData();
-  data.concatData(String(millis()));
-  data.concatData(loadCell_1.readLoadString());
-  data.concatData(loadCell_2.readLoadString());
-  strcpy(buffer[counter], data.getData().c_str());
-  counter++;
-  READ_FLAG = false;
+  if(READ_FLAG){
+    data.emptyData();
+    data.concatData(String(millis()));
+    data.concatData(loadCell_1.readLoadString());
+    data.concatData(loadCell_2.readLoadString());
+    if(counter < 1000){
+      strcpy(buffer[counter], data.getData().c_str());
+      counter++;
+    }
+    Serial.println(data.getData());
+    READ_FLAG = false;
+  }
+
+  if(checkBufferSize()){
+    sd.writeSD(buffer, TESTFILE);
+  }
 }
 
 bool checkBufferSize(){
@@ -181,5 +199,77 @@ bool checkBufferSize(){
     return true;
   }
   return false;
+}
+
+
+void moveToPosDEBUG(){
+  Serial.println("Please enter a target position from 0 to 180 degrees: ");
+  char buffer[] = {' ', ' ', ' '};
+  int incomingValue;
+
+  while(!Serial.available());
+  Serial.readBytesUntil('\n', buffer, 3);
+  incomingValue = atoi(buffer);
+  Serial.println(incomingValue);
+
+  target = incomingValue;
+
+  Serial.print("Target is: ");
+  Serial.print(target);
+  Serial.println();
+
+  Serial.println("Enter the character 'g' to move the motor.");
+
+  while(Serial.available() == 0){
+  }
+  int myData = Serial.read();
+ 
+  
+  if(myData == 'g'){
+    while(pos < target){
+      computePID();
+    }
+  }
+}
+
+void moveSinWave(){
+  target = 250*sin(prevT/1.0e6);
+  computePID();
+  delay(0.5);
+}
+
+
+void setupLoadCellTimer(){
+  TIM_TypeDef* Instance = LOADCELL_TIMER;
+  HardwareTimer * MyTim = new HardwareTimer(Instance);
+ 
+  MyTim->pause();
+  MyTim->refresh();
+  MyTim->setOverflow(LOADCELL_TIMER_FREQ, HERTZ_FORMAT);
+  MyTim->attachInterrupt(interruptReadData);
+  MyTim->resume();
+}
+
+void setupMotor1(){
+  TIM_TypeDef *InstanceLeft = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(left), PinMap_PWM);
+  channelLeft = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(left), PinMap_PWM));
+  MotorLeft = new HardwareTimer(InstanceLeft);
+
+  TIM_TypeDef *InstanceRight = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(right), PinMap_PWM);
+  channelRight = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(right), PinMap_PWM));
+  MotorRight = new HardwareTimer(InstanceRight);
+  
+
+  MotorRight->setPWM(channelRight, right, 1000, 100);
+  MotorRight->pauseChannel(channelRight);
+  MotorLeft->setPWM(channelLeft, left, 1000, 100);
+
+  pinMode(motorPin, OUTPUT);
+  analogWrite(motorPin, 0);
+
+  pinMode(m1_encoder_A, INPUT);
+  pinMode(m1_encoder_B, INPUT);
+
+  attachInterrupt(digitalPinToInterrupt(m1_encoder_A), readEncoder, RISING);
 }
 

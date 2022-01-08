@@ -30,8 +30,27 @@ const char TESTFILE[9] = "testfile";
 // SD
 #define INIT_DELAY          1000
 
-// TIMER4
-#define LOADCELL_TIMER_FREQ 100
 
+// LOADCELLS
+#define LOADCELL_TIMER_FREQ 80
+#define CALIBRATION_FACTOR -7050
+#define LOADCELL_TIMER TIM4
+
+// MOTOR 1
+#define left PB3
+#define right PB4
+#define motorPin PA15
+#define motorSpeed 255
+#define m1_encoder_A PA2
+#define m1_encoder_B PA3
+
+#define turnClockWise 1
+#define turnCounterClockWise -1
+#define stopRotating 0
+
+// PID 
+#define kp 1.5
+#define kd 0.05
+#define ki 0
 
 #endif // DEFINITIONS_H

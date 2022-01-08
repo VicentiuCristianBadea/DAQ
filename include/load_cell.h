@@ -14,6 +14,7 @@ class LoadCell
 
         void setupLoadCell(int, int, int);
         void loadCellBegin();
+        void calibrate();
         double readLoadDouble();
         String readLoadString();
 
@@ -24,6 +25,7 @@ class LoadCell
         int _sck_pin;
         int _timeout;
         int _timer;
+        float _calibration_factor;
 
         HX711 _scale;
 
