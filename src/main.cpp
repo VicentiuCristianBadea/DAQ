@@ -29,6 +29,9 @@ void moveSinWave();
 void setupLoadCellTimer();
 void setupMotor1();
 
+void setupDriverInput();
+void updateDriverInput();
+
 // MOTOR 1
 HardwareTimer *MotorLeft;
 HardwareTimer *MotorRight;
@@ -50,6 +53,10 @@ Data data;
 int counter = 0;
 bool READ_FLAG = false;
 char buffer[1000][100];
+
+// Pot data
+float EMA_a = 0.1;
+int EMA_S = 0;
 
 
 
@@ -73,6 +80,9 @@ void setup()
 
   /*  Setup motors */
   setupMotor1();
+
+  /*  Setup driver input resistance */
+  setupDriverInput();
   
 }
 
@@ -86,7 +96,10 @@ void loop()
   // readToBuffer();
 
   /*  MOVE MOTOR TO POSITION - DEBUG */
-  moveToPosDEBUG();
+  // moveToPosDEBUG();
+
+  updateDriverInput();
+  computePID();
 
   /*  MOVE MOTOR SIN WAVE - DEBUG */
   // moveSinWave();
@@ -193,6 +206,30 @@ void readToBuffer(){
   }
 }
 
+void setupDriverInput(){
+  pinMode(PB1, INPUT);
+}
+
+void updateDriverInput(){
+  if(READ_FLAG){
+    // analogReadResolution(16);
+    int driverInput = 0;
+    for(int i = 0; i < 10; i++){
+      driverInput += analogRead(PB1);
+      // EMA_S += (EMA_a*driverInput) + ((1-EMA_a)*EMA_S);
+    }
+    driverInput = driverInput/10;
+   
+    int mapped = map(driverInput, 0,200, 0, 90);
+    if(mapped > 90){
+      mapped = 90;
+    }
+    target = mapped;
+    // Serial.println(mapped);
+    READ_FLAG = false;
+  }
+}
+
 bool checkBufferSize(){
   if(counter > 995){
     counter = 0;
@@ -272,4 +309,13 @@ void setupMotor1(){
 
   attachInterrupt(digitalPinToInterrupt(m1_encoder_A), readEncoder, RISING);
 }
+
+
+
+// TODO:
+// Change readEncoder to readEncoder1 
+// Create readEncoder2
+// Add attachInterrupt(digitalPinToInterrupt(m2_encoder_A), readEncoder2, RISING);
+// Subtract encoder values of m1 and m2, and if too different - out of synch, throw exception
+
 
