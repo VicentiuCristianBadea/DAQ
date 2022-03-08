@@ -71,9 +71,9 @@ void setup()
 
 
   /*  Setup hardware */
-  setupSensors();
-  setupSDCard();  
-  setupData();
+  // setupSensors();
+  // setupSDCard();  
+  // setupData();
 
   /*  Setup timers */
   setupLoadCellTimer();
