@@ -48,6 +48,10 @@ const char TESTFILE[9] = "testfile";
 #define turnCounterClockWise -1
 #define stopRotating 0
 
+// MOTOR 2
+#define m2_encoder_A PB0
+#define m2_encoder_B PB2
+
 // PID 
 #define kp 1.5
 #define kd 0.05

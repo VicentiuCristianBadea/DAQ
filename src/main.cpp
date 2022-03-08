@@ -23,14 +23,18 @@ void readToBuffer();
 bool checkBufferSize();
 void setMotor(int, int);
 void readEncoder();
+void readEncoder2();
 void computePID();
 void moveToPosDEBUG();
 void moveSinWave();
 void setupLoadCellTimer();
 void setupMotor1();
+void setupMotor2();
 
 void setupDriverInput();
 void updateDriverInput();
+
+boolean checkMotorAngleDelta();
 
 // MOTOR 1
 HardwareTimer *MotorLeft;
@@ -38,6 +42,7 @@ HardwareTimer *MotorRight;
 uint32_t channelLeft;
 uint32_t channelRight;
 int pos = 0;
+int encoderPos2 = 0;
 long prevT = 0;
 float eprev = 0;
 float eintegral = 0;
@@ -80,6 +85,7 @@ void setup()
 
   /*  Setup motors */
   setupMotor1();
+  setupMotor2();
 
   /*  Setup driver input resistance */
   setupDriverInput();
@@ -99,7 +105,8 @@ void loop()
   // moveToPosDEBUG();
 
   updateDriverInput();
-  computePID();
+  // if(checkMotorAngleDelta)
+    computePID();
 
   /*  MOVE MOTOR SIN WAVE - DEBUG */
   // moveSinWave();
@@ -135,6 +142,8 @@ void computePID(){
   Serial.print(target);
   Serial.print(" ");
   Serial.print(pos);
+  Serial.print(" ");
+  Serial.print(encoderPos2);
   Serial.println();
 }
 
@@ -146,6 +155,22 @@ void readEncoder(){
   else{
     pos--;
   }
+}
+
+void readEncoder2(){
+  int b = digitalRead(m2_encoder_B);
+  if(b>0){
+    encoderPos2++;
+  }else{
+    encoderPos2--;
+  }
+}
+
+boolean checkMotorAngleDelta(){
+  if(abs(pos - encoderPos2) > 3){
+    return false;
+  }
+  return true;
 }
 
 void setMotor(int dir, int pwr){
@@ -208,19 +233,25 @@ void readToBuffer(){
 
 void setupDriverInput(){
   pinMode(PB1, INPUT);
+
+  EMA_S = analogRead(PB1);
 }
 
 void updateDriverInput(){
   if(READ_FLAG){
     // analogReadResolution(16);
     int driverInput = 0;
-    for(int i = 0; i < 10; i++){
+    for(int i = 0; i < 5; i++){
       driverInput += analogRead(PB1);
-      // EMA_S += (EMA_a*driverInput) + ((1-EMA_a)*EMA_S);
+    //   // EMA_S += (EMA_a*driverInput) + ((1-EMA_a)*EMA_S);
     }
-    driverInput = driverInput/10;
+    driverInput = driverInput/5;
+
+    // driverInput = analogRead(PB1);
+    // EMA_S = (EMA_a*driverInput) + ((1-EMA_a)*EMA_S);
    
     int mapped = map(driverInput, 0,200, 0, 90);
+    // int mapped = map(EMA_S, 0, 200, 0 ,90);
     if(mapped > 90){
       mapped = 90;
     }
@@ -261,7 +292,6 @@ void moveToPosDEBUG(){
   }
   int myData = Serial.read();
  
-  
   if(myData == 'g'){
     while(pos < target){
       computePID();
@@ -295,7 +325,6 @@ void setupMotor1(){
   TIM_TypeDef *InstanceRight = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(right), PinMap_PWM);
   channelRight = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(right), PinMap_PWM));
   MotorRight = new HardwareTimer(InstanceRight);
-  
 
   MotorRight->setPWM(channelRight, right, 1000, 100);
   MotorRight->pauseChannel(channelRight);
@@ -310,7 +339,12 @@ void setupMotor1(){
   attachInterrupt(digitalPinToInterrupt(m1_encoder_A), readEncoder, RISING);
 }
 
+void setupMotor2(){
+  pinMode(m2_encoder_A, INPUT);
+  pinMode(m2_encoder_B, INPUT);
 
+  attachInterrupt(digitalPinToInterrupt(m2_encoder_A), readEncoder2, RISING);
+}
 
 // TODO:
 // Change readEncoder to readEncoder1 
