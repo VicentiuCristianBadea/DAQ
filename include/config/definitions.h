@@ -37,9 +37,9 @@ const char TESTFILE[9] = "testfile";
 #define LOADCELL_TIMER TIM4
 
 // MOTOR 1
-#define left PB3
-#define right PB4
-#define motorPin PA15
+#define m1_left PB3
+#define m1_right PB4
+#define m1_motorPin PA15
 #define motorSpeed 255
 #define m1_encoder_A PA2
 #define m1_encoder_B PA3
@@ -49,6 +49,9 @@ const char TESTFILE[9] = "testfile";
 #define stopRotating 0
 
 // MOTOR 2
+#define m2_left PB15
+#define m2_right PB13
+#define m2_motorPin PB14
 #define m2_encoder_A PB0
 #define m2_encoder_B PB2
 
