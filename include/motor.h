@@ -26,6 +26,7 @@ class MyMotor{
 
         void setupMotorTimers();
         void setupMotorPins();
+        void pauseMotor();
         
         int getError();
         int PIDgetDirection(float);

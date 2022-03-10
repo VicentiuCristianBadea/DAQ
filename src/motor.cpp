@@ -82,6 +82,11 @@ void MyMotor::subPos(){
   pos--;
 }
 
+void MyMotor::pauseMotor(){
+  timerLeft->pause();
+  timerRight->pause();
+}
+
 float MyMotor::PIDlimitPower(float power){
   if(power>PID_MAXPOWER){
     return float(PID_MAXPOWER);
@@ -106,6 +111,8 @@ int MyMotor::getError(){
 
 boolean MyMotor::checkMotorAngleDelta(MyMotor m1, MyMotor m2){
   if(abs(m1.getPos() - m2.getPos()) > 5){
+    m1.pauseMotor();
+    m2.pauseMotor();
     return false;
   }
   return true;
