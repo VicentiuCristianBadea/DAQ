@@ -7,9 +7,10 @@
 #include "load_cell.h"
 #include "sd_card.h"
 #include "data.h"
+#include "motor.h"
 
 #include "config/definitions.h"
-
+#include "config/globals.h"
 
 using namespace std;
 
@@ -21,12 +22,12 @@ void createSensor(LoadCell&, int);
 void interruptReadData();
 // void readToBuffer();
 // bool checkBufferSize();
-void m1_setMotor(int, int);
-void m2_setMotor(int, int);
-void readEncoder();
-void readEncoder2();
-void m1_computePID();
-void m2_computePID();
+// void m1_setMotor(int, int);
+// void m2_setMotor(int, int);
+// void readEncoder();
+// void readEncoder2();
+// void m1_computePID();
+// void m2_computePID();
 // void moveToPosDEBUG();
 // void moveSinWave();
 void setupLoadCellTimer();
@@ -41,29 +42,39 @@ void setupLinearPot1();
 void setupLinearPot2();
 void updateLinearPotData();
 
-boolean checkMotorAngleDelta();
+// boolean checkMotorAngleDelta();
 boolean checkLinearPotDelta();
 
 // MOTOR 1
-HardwareTimer *m1_timerLeft;
-HardwareTimer *m1_timerRight;
-uint32_t m1_channelLeft;
-uint32_t m1_channelRight;
-int m1_pos = 0;
-long m1_prevT = 0;
-float m1_eprev = 0;
-float m1_eintegral = 0;
-int target = 0;
+// HardwareTimer *m1_timerLeft;
+// HardwareTimer *m1_timerRight;
+// uint32_t m1_channelLeft;
+// uint32_t m1_channelRight;
+// int m1_pos = 0;
+// long m1_prevT = 0;
+// float m1_eprev = 0;
+// float m1_eintegral = 0;
+// int target = 0;
+
 
 // MOTOR 2
-HardwareTimer *m2_timerLeft;
-HardwareTimer *m2_timerRight;
-uint32_t m2_channelLeft;
-uint32_t m2_channelRight;
-int m2_pos = 0;
-long m2_prevT = 0;
-float m2_eprev = 0;
-float m2_eintegral = 0;
+// HardwareTimer *m2_timerLeft;
+// HardwareTimer *m2_timerRight;
+// uint32_t m2_channelLeft;
+// uint32_t m2_channelRight;
+// int m2_pos = 0;
+// long m2_prevT = 0;
+// float m2_eprev = 0;
+// float m2_eintegral = 0;
+
+
+// NEW STUFF
+MyMotor m1;
+MyMotor m2;
+void m1ReadEncoder();
+void m2ReadEncoder();
+int target = 0;
+
 
 // LOAD CELLS
 LoadCell loadCell_1;
@@ -86,26 +97,20 @@ int linearPot2 = 0;
 
 void setup()
 {
-  
   /*  Check if alive  */
   pinMode(PC13, OUTPUT);
 
   /*  Fix baudrate  */
   Serial.begin(115200);
 
-
-  /*  Setup hardware */
-  // setupSensors();
-  // setupSDCard();  
-  // setupData();
-
-  /*  Setup timers */
+  /*  Setup timers  */
   setupLoadCellTimer();
 
-  /*  Setup motors */
+  /*  Setup motors  */
   setupMotor1();
   setupMotor2();
 
+  /*  Setup potentiometers  */
   setupLinearPot1();
   setupLinearPot2();
 
@@ -116,79 +121,86 @@ void setup()
 
 void loop()
 {
-  /*  LOADCELL CALIBRATION */
-  // loadCell_1.calibrate();
-
-  /*  LOADCELL READ DATA */
-  // readToBuffer();
-
-  /*  MOVE MOTOR TO POSITION - DEBUG */
-  // moveToPosDEBUG();
+  // Blackpill-linearPots
 
   updateDriverInput();
   updateLinearPotData();
   
-  if(checkLinearPotDelta() && checkMotorAngleDelta()){
-    m1_computePID();
-    m2_computePID();
+  if(checkLinearPotDelta() && MyMotor::checkMotorAngleDelta(m1, m2)){
+    m1.computePID();
+    m2.computePID();
   }
-  // m1_computePID();
-  // m2_computePID();
 
   printData();
-
-  /*  MOVE MOTOR SIN WAVE - DEBUG */
-  // moveSinWave();
 }
 
-void m1_computePID(){
-  long currT = micros();
-  float deltaT = ((float)(currT-m1_prevT))/1.0e6;
-  m1_prevT = currT;
-  int e = m1_pos-target;
-  float dedt = (e - m1_eprev)/(deltaT);
-  m1_eintegral = m1_eintegral + e*deltaT;
-  float u = kp*e + kd*dedt + ki*m1_eintegral;
-  float pwr = fabs(u);
-  if(pwr>255){
-    pwr = 255;
-  }
-  int dir = 1;
-  if(u<0){
-    dir = -1;
-  }
-  m1_setMotor(dir, pwr);
-  m1_eprev = e;
-}
+// void m1_computePID(){
+//   long currT = micros();
+//   float deltaT = ((float)(currT-m1_prevT))/1.0e6;
+//   m1_prevT = currT;
+//   int e = getError();
+//   float dedt = (e - m1_eprev)/(deltaT); //  Error rate of change 
+//   m1_eintegral = m1_eintegral + e*deltaT;
+//   float u = kp*e + kd*dedt + ki*m1_eintegral; //  Control signal
 
-void m2_computePID(){
-  long currT = micros();
-  float deltaT = ((float)(currT-m2_prevT))/1.0e6;
-  m2_prevT = currT;
-  int e = m2_pos-target;
-  float dedt = (e - m2_eprev)/(deltaT);
-  m2_eintegral = m2_eintegral + e*deltaT;
-  float u = kp*e + kd*dedt + ki*m2_eintegral;
-  float pwr = fabs(u);
-  if(pwr>255){
-    pwr = 255;
-  }
-  int dir = 1;
-  if(u<0){
-    dir = -1;
-  }
-  m2_setMotor(dir, pwr);
-  m2_eprev = e;
-}
+//   float pwr = fabs(u);
+//   pwr = PIDlimitPower(pwr)
+  
+//   int dir = PIDgetDirection(u);
+
+//   m1_setMotor(dir, pwr);
+//   m1_eprev = e;
+// }
+
+// float PIDlimitPower(float power){
+//   if(power>PID_MAXPOWER){
+//     return float(PID_MAXPOWER);
+//   }
+//   return power;
+// }
+
+// int PIDgetDirection(float u){
+//   int dir = 1;
+//   if(u<0){
+//     return -1;
+//   }
+//   else{
+//     return 1
+//   }
+// }
+
+// int getError(){
+//   return m1_pos-target;
+// }
+
+// void m2_computePID(){
+//   long currT = micros();
+//   float deltaT = ((float)(currT-m2_prevT))/1.0e6;
+//   m2_prevT = currT;
+//   int e = m2_pos-target;
+//   float dedt = (e - m2_eprev)/(deltaT);
+//   m2_eintegral = m2_eintegral + e*deltaT;
+//   float u = kp*e + kd*dedt + ki*m2_eintegral;
+//   float pwr = fabs(u);
+//   if(pwr>255){
+//     pwr = 255;
+//   }
+//   int dir = 1;
+//   if(u<0){
+//     dir = -1;
+//   }
+//   m2_setMotor(dir, pwr);
+//   m2_eprev = e;
+// }
 
 void printData(){
   Serial.print(millis());
   Serial.print(" Target value: ");
   Serial.print(target);
   Serial.print(" | M1 Encoder: ");
-  Serial.print(m1_pos);
+  Serial.print(m1.getPos());
   Serial.print(" | M2 Encoder: ");
-  Serial.print(m2_pos);
+  Serial.print(m2.getPos());
   Serial.print(" | LinearPot1: ");
   Serial.print(linearPot1);
   Serial.print(" | LinearPot2: ");
@@ -197,59 +209,59 @@ void printData(){
 
 }
 
-void readEncoder(){
-  int b = digitalRead(m1_encoder_B);
-  if(b>0){
-    m1_pos++;
-  }
-  else{
-    m1_pos--;
-  }
-}
+// void readEncoder(){
+//   int b = digitalRead(m1_encoder_B);
+//   if(b>0){
+//     m1_pos++;
+//   }
+//   else{
+//     m1_pos--;
+//   }
+// }
 
-void readEncoder2(){
-  int b = digitalRead(m2_encoder_B);
-  if(b>0){
-    m2_pos++;
-  }else{
-    m2_pos--;
-  }
-}
+// void readEncoder2(){
+//   int b = digitalRead(m2_encoder_B);
+//   if(b>0){
+//     m2_pos++;
+//   }else{
+//     m2_pos--;
+//   }
+// }
 
-boolean checkMotorAngleDelta(){
-  if(abs(m1_pos - m2_pos) > 5){
-    return false;
-  }
-  return true;
-}
+// boolean checkMotorAngleDelta(){
+//   if(abs(m1_pos - m2_pos) > 5){
+//     return false;
+//   }
+//   return true;
+// }
 
-void m1_setMotor(int dir, int pwr){
-  analogWrite(m1_motorPin, pwr);
-  if(dir == turnClockWise){   // Turn right
-    m1_timerLeft->pauseChannel(m1_channelLeft);
-    m1_timerRight->resume();
-  }else if(dir == turnCounterClockWise){ //Turn left
-    m1_timerRight->pauseChannel(m1_channelRight);
-    m1_timerLeft->resume();
-  }else{
-    m1_timerLeft->pauseChannel(m1_channelLeft);
-    m1_timerRight->pauseChannel(m1_channelRight);
-  }
-}
+// void m1_setMotor(int dir, int pwr){
+//   analogWrite(m1_motorPin, pwr);
+//   if(dir == turnClockWise){   // Turn right
+//     m1_timerLeft->pauseChannel(m1_channelLeft);
+//     m1_timerRight->resume();
+//   }else if(dir == turnCounterClockWise){ //Turn left
+//     m1_timerRight->pauseChannel(m1_channelRight);
+//     m1_timerLeft->resume();
+//   }else{
+//     m1_timerLeft->pauseChannel(m1_channelLeft);
+//     m1_timerRight->pauseChannel(m1_channelRight);
+//   }
+// }
 
-void m2_setMotor(int dir, int pwr){
-  analogWrite(m2_motorPin, pwr);
-  if(dir == turnClockWise){   // Turn right
-    m2_timerLeft->pauseChannel(m2_channelLeft);
-    m2_timerRight->resume();
-  }else if(dir == turnCounterClockWise){ //Turn left
-    m2_timerRight->pauseChannel(m2_channelRight);
-    m2_timerLeft->resume();
-  }else{
-    m2_timerLeft->pauseChannel(m2_channelLeft);
-    m2_timerRight->pauseChannel(m2_channelRight);
-  }
-}
+// void m2_setMotor(int dir, int pwr){
+//   analogWrite(m2_motorPin, pwr);
+//   if(dir == turnClockWise){   // Turn right
+//     m2_timerLeft->pauseChannel(m2_channelLeft);
+//     m2_timerRight->resume();
+//   }else if(dir == turnCounterClockWise){ //Turn left
+//     m2_timerRight->pauseChannel(m2_channelRight);
+//     m2_timerLeft->resume();
+//   }else{
+//     m2_timerLeft->pauseChannel(m2_channelLeft);
+//     m2_timerRight->pauseChannel(m2_channelRight);
+//   }
+// }
 
 // setup functions
 // void setupSensors(){
@@ -398,48 +410,61 @@ void setupLoadCellTimer(){
 }
 
 void setupMotor1(){
-  TIM_TypeDef *InstanceLeft = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(m1_left), PinMap_PWM);
-  m1_channelLeft = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(m1_left), PinMap_PWM));
-  m1_timerLeft = new HardwareTimer(InstanceLeft);
-
-  TIM_TypeDef *InstanceRight = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(m1_right), PinMap_PWM);
-  m1_channelRight = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(m1_right), PinMap_PWM));
-  m1_timerRight = new HardwareTimer(InstanceRight);
-
-  m1_timerRight->setPWM(m1_channelRight, m1_right, 1000, 100);
-  m1_timerRight->pauseChannel(m1_channelRight);
-  m1_timerLeft->setPWM(m1_channelLeft, m1_left, 1000, 100);
-
-  pinMode(m1_motorPin, OUTPUT);
-  analogWrite(m1_motorPin, 0);
-
-  pinMode(m1_encoder_A, INPUT);
-  pinMode(m1_encoder_B, INPUT);
-
-  attachInterrupt(digitalPinToInterrupt(m1_encoder_A), readEncoder, RISING);
+  m1 = MyMotor();
+  m1.setupMotor(m1_motorPin, m1_left, m1_right, m1_encoder_A, m1_encoder_B);
+  attachInterrupt(digitalPinToInterrupt(m1.getEncoderA()), m1ReadEncoder, RISING);
 }
 
 void setupMotor2(){
-  TIM_TypeDef *InstanceLeft = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(m2_left), PinMap_PWM);
-  m2_channelLeft = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(m2_left), PinMap_PWM));
-  m2_timerLeft = new HardwareTimer(InstanceLeft);
-
-  TIM_TypeDef *InstanceRight = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(m2_right), PinMap_PWM);
-  m2_channelRight = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(m2_right), PinMap_PWM));
-  m2_timerRight = new HardwareTimer(InstanceRight);
-
-  m2_timerRight->setPWM(m2_channelRight, m2_right, 1000, 100);
-  m2_timerRight->pauseChannel(m2_channelRight);
-  m2_timerLeft->setPWM(m2_channelLeft, m2_left, 1000, 100);
-
-  pinMode(m2_motorPin, OUTPUT);
-  analogWrite(m2_motorPin, 0);
-
-  pinMode(m2_encoder_A, INPUT);
-  pinMode(m2_encoder_B, INPUT);
-
-  attachInterrupt(digitalPinToInterrupt(m2_encoder_A), readEncoder2, RISING);
+  m2 = MyMotor();
+  m2.setupMotor(m2_motorPin, m2_left, m2_right, m2_encoder_A, m2_encoder_B);
+  attachInterrupt(digitalPinToInterrupt(m2.getEncoderA()), m2ReadEncoder, RISING);
 }
+
+void m1ReadEncoder(){
+  int b = digitalRead(m1.getEncoderB());
+  if(b>0){
+      m1.addPos();
+  }
+  else{
+      m1.subPos();
+  }
+}
+
+void m2ReadEncoder(){
+  int b = digitalRead(m2.getEncoderB());
+  if(b>0){
+      m2.addPos();
+  }
+  else{
+      m2.subPos();
+  }
+}
+
+
+
+
+// void setupMotor2(){
+//   TIM_TypeDef *InstanceLeft = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(m2_left), PinMap_PWM);
+//   m2_channelLeft = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(m2_left), PinMap_PWM));
+//   m2_timerLeft = new HardwareTimer(InstanceLeft);
+
+//   TIM_TypeDef *InstanceRight = (TIM_TypeDef *)pinmap_peripheral(digitalPinToPinName(m2_right), PinMap_PWM);
+//   m2_channelRight = STM_PIN_CHANNEL(pinmap_function(digitalPinToPinName(m2_right), PinMap_PWM));
+//   m2_timerRight = new HardwareTimer(InstanceRight);
+
+//   m2_timerRight->setPWM(m2_channelRight, m2_right, 1000, 100);
+//   m2_timerRight->pauseChannel(m2_channelRight);
+//   m2_timerLeft->setPWM(m2_channelLeft, m2_left, 1000, 100);
+
+//   pinMode(m2_motorPin, OUTPUT);
+//   analogWrite(m2_motorPin, 0);
+
+//   pinMode(m2_encoder_A, INPUT);
+//   pinMode(m2_encoder_B, INPUT);
+
+//   attachInterrupt(digitalPinToInterrupt(m2_encoder_A), readEncoder2, RISING);
+// }
 
 // TODO:
 // Change readEncoder to readEncoder1 
