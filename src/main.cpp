@@ -37,7 +37,12 @@ void setupDriverInput();
 void updateDriverInput();
 void printData();
 
+void setupLinearPot1();
+void setupLinearPot2();
+void updateLinearPotData();
+
 boolean checkMotorAngleDelta();
+boolean checkLinearPotDelta();
 
 // MOTOR 1
 HardwareTimer *m1_timerLeft;
@@ -71,9 +76,13 @@ int counter = 0;
 bool READ_FLAG = false;
 char buffer[1000][100];
 
-// Pot data
+// MOTOR POT DATA
 float EMA_a = 0.1;
 int EMA_S = 0;
+
+// LINEAR POT DATA
+int linearPot1 = 0;
+int linearPot2 = 0;
 
 void setup()
 {
@@ -97,6 +106,9 @@ void setup()
   setupMotor1();
   setupMotor2();
 
+  setupLinearPot1();
+  setupLinearPot2();
+
   /*  Setup driver input resistance */
   setupDriverInput();
 }
@@ -114,9 +126,14 @@ void loop()
   // moveToPosDEBUG();
 
   updateDriverInput();
-  // if(checkMotorAngleDelta)
-  m1_computePID();
-  m2_computePID();
+  updateLinearPotData();
+  
+  if(checkLinearPotDelta() && checkMotorAngleDelta()){
+    m1_computePID();
+    m2_computePID();
+  }
+  // m1_computePID();
+  // m2_computePID();
 
   printData();
 
@@ -165,12 +182,19 @@ void m2_computePID(){
 }
 
 void printData(){
+  Serial.print(millis());
+  Serial.print(" Target value: ");
   Serial.print(target);
-  Serial.print(" ");
+  Serial.print(" | M1 Encoder: ");
   Serial.print(m1_pos);
-  Serial.print(" ");
+  Serial.print(" | M2 Encoder: ");
   Serial.print(m2_pos);
+  Serial.print(" | LinearPot1: ");
+  Serial.print(linearPot1);
+  Serial.print(" | LinearPot2: ");
+  Serial.print(linearPot2);
   Serial.println();
+
 }
 
 void readEncoder(){
@@ -193,7 +217,7 @@ void readEncoder2(){
 }
 
 boolean checkMotorAngleDelta(){
-  if(abs(m1_pos - m2_pos) > 3){
+  if(abs(m1_pos - m2_pos) > 5){
     return false;
   }
   return true;
@@ -228,10 +252,10 @@ void m2_setMotor(int dir, int pwr){
 }
 
 // setup functions
-void setupSensors(){
-  createSensor(loadCell_1, LOADCELL_DOUT_PIN_1);
-  createSensor(loadCell_2, LOADCELL_DOUT_PIN_2);
-}
+// void setupSensors(){
+//   createSensor(loadCell_1, LOADCELL_DOUT_PIN_1);
+//   createSensor(loadCell_2, LOADCELL_DOUT_PIN_2);
+// }
 
 void createSensor(LoadCell &loadCell, int dout_pin){
   loadCell = LoadCell();
@@ -273,8 +297,15 @@ void interruptReadData(){
 
 void setupDriverInput(){
   pinMode(PB1, INPUT);
-
   EMA_S = analogRead(PB1);
+}
+
+void setupLinearPot1(){
+  pinMode(PA0, INPUT);
+}
+
+void setupLinearPot2(){
+  pinMode(PA1, INPUT);
 }
 
 void updateDriverInput(){
@@ -292,8 +323,22 @@ void updateDriverInput(){
       mapped = 90;
     }
     target = mapped;
+  }
+}
+
+void updateLinearPotData(){
+  if(READ_FLAG){
+    linearPot1 = analogRead(PA0);
+    linearPot2 = analogRead(PA1);
     READ_FLAG = false;
   }
+}
+
+boolean checkLinearPotDelta(){
+  if(abs(linearPot1 - linearPot2) > 600){
+    return false;
+  }
+  return true;
 }
 
 // bool checkBufferSize(){

@@ -14,8 +14,8 @@ const char TESTFILE[9] = "testfile";
 /***********************************/
 
 
-#define LOADCELL_DOUT_PIN_1     PA0
-#define LOADCELL_DOUT_PIN_2     PA1
+// #define LOADCELL_DOUT_PIN_1     PA0
+// #define LOADCELL_DOUT_PIN_2     PA1
 #define LOADCELL_SCK_PIN        PB10
 
 #define SD_BEGIN_PIN            PA4
@@ -32,7 +32,7 @@ const char TESTFILE[9] = "testfile";
 
 
 // LOADCELLS
-#define LOADCELL_TIMER_FREQ 80
+#define LOADCELL_TIMER_FREQ 100
 #define CALIBRATION_FACTOR -7050
 #define LOADCELL_TIMER TIM4
 
