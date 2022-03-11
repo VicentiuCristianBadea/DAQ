@@ -16,12 +16,12 @@ using namespace std;
 
 // PROTOTYPES
 // void setupSensors();
-// void setupSDCard();
-void setupData();
+void setupSDCard();
+// void setupData();
 void createSensor(LoadCell&, int);
 void interruptReadData();
-// void readToBuffer();
-// bool checkBufferSize();
+void readToBuffer();
+bool checkBufferSize();
 
 // void moveToPosDEBUG();
 // void moveSinWave();
@@ -76,6 +76,8 @@ void setup()
 
   /*  Setup timers  */
   setupLoadCellTimer();
+
+  setupSDCard();
 
   /*  Setup motors  */
   setupMotor1();
@@ -137,9 +139,9 @@ void setupSDCard(){
   sd.setupSD();
 }
 
-void setupData(){
-  data = Data();
-}
+// void setupData(){
+//   data = Data();
+// }
 
 void interruptReadData(){
   READ_FLAG = true;
