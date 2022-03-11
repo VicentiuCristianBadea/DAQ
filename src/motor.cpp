@@ -18,7 +18,6 @@ void MyMotor::setupMotor(const int mp, const int lp, const int rp, const int eA,
 
   setupMotorTimers();
   setupMotorPins();
-
 }
 
 void MyMotor::setupMotorTimers(){

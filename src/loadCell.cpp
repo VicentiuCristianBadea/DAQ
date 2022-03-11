@@ -2,7 +2,7 @@
 #include <HX711.h>
 #include <string.h>
 
-#include "load_cell.h"
+#include "loadCell.h"
 #include "config/definitions.h"
 
 using namespace std;

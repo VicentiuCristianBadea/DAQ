@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 
-#include "sd_card.h"
+#include "sdCard.h"
 
 #include "config/definitions.h"
 

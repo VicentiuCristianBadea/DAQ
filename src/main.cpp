@@ -4,102 +4,80 @@
 #include <Wire.h>
 #include <Servo.h>
 
-#include "load_cell.h"
-#include "sd_card.h"
+#include "loadCell.h"
+#include "sdCard.h"
 #include "data.h"
 #include "motor.h"
+#include "linearPot.h"
+#include "driverInput.h"
 
 #include "config/definitions.h"
 #include "config/globals.h"
 
 using namespace std;
 
-// PROTOTYPES
-// void setupSensors();
+// SETUP PROTOTYPES
 void setupSDCard();
-// void setupData();
-void createSensor(LoadCell&, int);
-void interruptReadData();
+void setupReadDataTimer();
+void setupMotor1();
+void setupMotor2();
+void setupLinearPot1();
+void setupLinearPot2();
+void setupDriverInput();
+
+// HELPER PROTOTYPES
+void printData();
 void readToBuffer();
 bool checkBufferSize();
 
-// void moveToPosDEBUG();
-// void moveSinWave();
-void setupLoadCellTimer();
-void setupMotor1();
-void setupMotor2();
-
-void setupDriverInput();
-void updateDriverInput();
-void printData();
-
-void setupLinearPot1();
-void setupLinearPot2();
-void updateLinearPotData();
-
-boolean checkLinearPotDelta();
-
-// NEW STUFF
-MyMotor m1;
-MyMotor m2;
+// CALLBACK PROTOTYPES
 void m1ReadEncoder();
 void m2ReadEncoder();
-int target = 0;
+void interruptReadData();
 
 
-// LOAD CELLS
-LoadCell loadCell_1;
-LoadCell loadCell_2;
-
-// SD CARD
+// OBJECT DECLARATIONS
+MyMotor m1;
+MyMotor m2;
 SD_card sd;
 Data data;
+LinearPot linearPot1;
+LinearPot linearPot2;
+DriverInput driverInput;
+
+// INIT GLOBALS
+int target = 0;
 int counter = 0;
 bool READ_FLAG = false;
 char buffer[1000][100];
 
-// MOTOR POT DATA
-float EMA_a = 0.1;
-int EMA_S = 0;
-
-// LINEAR POT DATA
-int linearPot1 = 0;
-int linearPot2 = 0;
 
 void setup()
 {
-  /*  Check if alive  */
+  /*  Application  */
   pinMode(PC13, OUTPUT);
 
   /*  Fix baudrate  */
   Serial.begin(115200);
 
   /*  Setup timers  */
-  setupLoadCellTimer();
+  setupReadDataTimer();
 
+  /*  Setup modules */
   setupSDCard();
-
-  /*  Setup motors  */
   setupMotor1();
   setupMotor2();
-
-  /*  Setup potentiometers  */
   setupLinearPot1();
   setupLinearPot2();
-
-  /*  Setup driver input resistance */
   setupDriverInput();
 }
 
-
 void loop()
 {
-  // Blackpill-linearPots
-
-  updateDriverInput();
-  updateLinearPotData();
+  DriverInput::updateDriverInput(driverInput);
+  LinearPot::updateLinearPotData(linearPot1, linearPot2);
   
-  if(checkLinearPotDelta() && MyMotor::checkMotorAngleDelta(m1, m2)){
+  if(LinearPot::checkLinearPotDelta(linearPot1, linearPot2) && MyMotor::checkMotorAngleDelta(m1, m2)){
     m1.computePID();
     m2.computePID();
   }
@@ -116,170 +94,76 @@ void printData(){
   Serial.print(" | M2 Encoder: ");
   Serial.print(m2.getPos());
   Serial.print(" | LinearPot1: ");
-  Serial.print(linearPot1);
+  Serial.print(linearPot1.getData());
   Serial.print(" | LinearPot2: ");
-  Serial.print(linearPot2);
+  Serial.print(linearPot2.getData());
   Serial.println();
 }
 
-// setup functions
-// void setupSensors(){
-//   createSensor(loadCell_1, LOADCELL_DOUT_PIN_1);
-//   createSensor(loadCell_2, LOADCELL_DOUT_PIN_2);
-// }
 
-void createSensor(LoadCell &loadCell, int dout_pin){
-  loadCell = LoadCell();
-  loadCell.setupLoadCell(dout_pin, LOADCELL_SCK_PIN, TIMEOUT);   
-  loadCell.loadCellBegin();
-}
+// ---------------------------------
+// SETUP
 
+// 32GB SD Module 
 void setupSDCard(){
   sd = SD_card();
   sd.setupSD();
 }
 
-// void setupData(){
-//   data = Data();
-// }
-
-void interruptReadData(){
-  READ_FLAG = true;
-}
-
-// void readToBuffer(){
-//   if(READ_FLAG){
-//     data.emptyData();
-//     data.concatData(String(millis()));
-//     data.concatData(loadCell_1.readLoadString());
-//     data.concatData(loadCell_2.readLoadString());
-//     if(counter < 1000){
-//       strcpy(buffer[counter], data.getData().c_str());
-//       counter++;
-//     }
-//     Serial.println(data.getData());
-//     READ_FLAG = false;
-//   }
-
-//   if(checkBufferSize()){
-//     sd.writeSD(buffer, TESTFILE);
-//   }
-// }
-
+// Driver adjustable rotary potentiometer
 void setupDriverInput(){
-  pinMode(PB1, INPUT);
-  EMA_S = analogRead(PB1);
+  driverInput = DriverInput();
+  driverInput.setupDriverInput(di_pin);
 }
 
+// Linear Potentiometer on Shock 1
 void setupLinearPot1(){
-  pinMode(PA0, INPUT);
+  linearPot1 = LinearPot();
+  linearPot1.setupLinearPot(l1_pin);
 }
 
+// Linear Potentiometer on Shock 2
 void setupLinearPot2(){
-  pinMode(PA1, INPUT);
+  linearPot2 = LinearPot();
+  linearPot2.setupLinearPot(l2_pin);
 }
 
-void updateDriverInput(){
-  if(READ_FLAG){
-    int driverInput = 0;
-    for(int i = 0; i < 5; i++){
-      driverInput += analogRead(PB1);
-    //   // EMA_S += (EMA_a*driverInput) + ((1-EMA_a)*EMA_S);
-    }
-    driverInput = driverInput/5;
-   
-    int mapped = map(driverInput, 0, 200, 0, 90);
-    // int mapped = map(EMA_S, 0, 200, 0 ,90);
-    if(mapped > 90){
-      mapped = 90;
-    }
-    target = mapped;
-  }
-}
-
-void updateLinearPotData(){
-  if(READ_FLAG){
-    linearPot1 = analogRead(PA0);
-    linearPot2 = analogRead(PA1);
-    READ_FLAG = false;
-  }
-}
-
-boolean checkLinearPotDelta(){
-  if(abs(linearPot1 - linearPot2) > 600){
-    return false;
-  }
-  return true;
-}
-
-// bool checkBufferSize(){
-//   if(counter > 995){
-//     counter = 0;
-//     return true;
-//   }
-//   return false;
-// }
-
-
-// void moveToPosDEBUG(){
-//   Serial.println("Please enter a target position from 0 to 180 degrees: ");
-//   char buffer[] = {' ', ' ', ' '};
-//   int incomingValue;
-
-//   while(!Serial.available());
-//   Serial.readBytesUntil('\n', buffer, 3);
-//   incomingValue = atoi(buffer);
-//   Serial.println(incomingValue);
-
-//   target = incomingValue;
-
-//   Serial.print("Target is: ");
-//   Serial.print(target);
-//   Serial.println();
-
-//   Serial.println("Enter the character 'g' to move the motor.");
-
-//   while(Serial.available() == 0){
-//   }
-//   int myData = Serial.read();
- 
-//   if(myData == 'g'){
-//     while(pos < target){
-//       computePID();
-//     }
-//   }
-// }
-
-// void moveSinWave(){
-//   target = 250*sin(prevT/1.0e6);
-//   computePID();
-//   delay(0.5);
-// }
-
-
-void setupLoadCellTimer(){
-  TIM_TypeDef* Instance = LOADCELL_TIMER;
+//  Create and set timer to set READ_FLAG to true 
+void setupReadDataTimer(){
+  TIM_TypeDef* Instance = READ_DATA_TIMER;
   HardwareTimer * MyTim = new HardwareTimer(Instance);
  
   MyTim->pause();
   MyTim->refresh();
-  MyTim->setOverflow(LOADCELL_TIMER_FREQ, HERTZ_FORMAT);
+  MyTim->setOverflow(READ_DATA_TIMER_FREQ, HERTZ_FORMAT);
   MyTim->attachInterrupt(interruptReadData);
   MyTim->resume();
 }
 
+// Create and setup Motor 1
 void setupMotor1(){
   m1 = MyMotor();
   m1.setupMotor(m1_motorPin, m1_left, m1_right, m1_encoder_A, m1_encoder_B);
   attachInterrupt(digitalPinToInterrupt(m1.getEncoderA()), m1ReadEncoder, RISING);
 }
 
+// Create and setup Motor 2
 void setupMotor2(){
   m2 = MyMotor();
   m2.setupMotor(m2_motorPin, m2_left, m2_right, m2_encoder_A, m2_encoder_B);
   attachInterrupt(digitalPinToInterrupt(m2.getEncoderA()), m2ReadEncoder, RISING);
 }
 
+
+// ---------------------------------
+// CALLBACKS
+
+// Set READ_FLAG to true and allow sensor reading
+void interruptReadData(){
+  READ_FLAG = true;
+}
+
+// Read data from encoder 1 and increment or decrement its position
 void m1ReadEncoder(){
   int b = digitalRead(m1.getEncoderB());
   if(b>0){
@@ -290,6 +174,7 @@ void m1ReadEncoder(){
   }
 }
 
+// Read data from encoder 2 and increment or decrement its position
 void m2ReadEncoder(){
   int b = digitalRead(m2.getEncoderB());
   if(b>0){
@@ -300,10 +185,5 @@ void m2ReadEncoder(){
   }
 }
 
-// TODO:
-// Change readEncoder to readEncoder1 
-// Create readEncoder2
-// Add attachInterrupt(digitalPinToInterrupt(m2_encoder_A), readEncoder2, RISING);
-// Subtract encoder values of m1 and m2, and if too different - out of synch, throw exception
 
 

@@ -30,11 +30,18 @@ const char TESTFILE[9] = "testfile";
 // SD
 #define INIT_DELAY          1000
 
-
 // LOADCELLS
-#define LOADCELL_TIMER_FREQ 100
+#define READ_DATA_TIMER_FREQ 100
 #define CALIBRATION_FACTOR -7050
-#define LOADCELL_TIMER TIM4
+#define READ_DATA_TIMER TIM4
+
+// LINEAR POTS
+#define MAX_LINEAR_POT_DELTA 600
+const int l1_pin = PA0;
+const int l2_pin = PA1;
+
+// DRIVER INPUT
+const int di_pin = PB1;
 
 // MOTOR 1
 const int m1_left = PB3;
