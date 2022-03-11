@@ -35,7 +35,6 @@ void m1ReadEncoder();
 void m2ReadEncoder();
 void interruptReadData();
 
-
 // OBJECT DECLARATIONS
 MyMotor m1;
 MyMotor m2;
@@ -50,7 +49,6 @@ int target = 0;
 int counter = 0;
 bool READ_FLAG = false;
 char buffer[1000][100];
-
 
 void setup()
 {
@@ -99,7 +97,6 @@ void printData(){
   Serial.print(linearPot2.getData());
   Serial.println();
 }
-
 
 // ---------------------------------
 // SETUP
@@ -154,7 +151,6 @@ void setupMotor2(){
   attachInterrupt(digitalPinToInterrupt(m2.getEncoderA()), m2ReadEncoder, RISING);
 }
 
-
 // ---------------------------------
 // CALLBACKS
 
@@ -184,6 +180,3 @@ void m2ReadEncoder(){
       m2.subPos();
   }
 }
-
-
-
