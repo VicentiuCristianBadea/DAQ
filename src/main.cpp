@@ -19,16 +19,22 @@ using namespace std;
 // SETUP PROTOTYPES
 void setupSDCard();
 void setupReadDataTimer();
+
 void setupMotor1();
 void setupMotor2();
+
 void setupLinearPot1();
 void setupLinearPot2();
+
 void setupDriverInput();
 
-// HELPER PROTOTYPES
+void setupHallEffect1();
+void setupHallEffect2();
+void updateHallEffectData();
+
+boolean checkLinearPotDelta();
+
 void printData();
-void readToBuffer();
-bool checkBufferSize();
 
 // CALLBACK PROTOTYPES
 void m1ReadEncoder();
@@ -50,6 +56,14 @@ int counter = 0;
 bool READ_FLAG = false;
 char buffer[1000][100];
 
+// MOTOR POT DATA
+float EMA_a = 0.1;
+int EMA_S = 0;
+
+// HALL EFFECT DATA
+int hallEffect1 = 0;
+int hallEffect2 = 0;
+
 void setup()
 {
   /*  Application  */
@@ -67,6 +81,8 @@ void setup()
   setupMotor2();
   setupLinearPot1();
   setupLinearPot2();
+  setupHallEffect1();
+  setupHallEffect2();
   setupDriverInput();
 }
 
@@ -74,6 +90,7 @@ void loop()
 {
   DriverInput::updateDriverInput(driverInput);
   LinearPot::updateLinearPotData(&linearPot1, &linearPot2);
+  updateHallEffectData();
   
   if(LinearPot::checkLinearPotDelta(&linearPot1, &linearPot2) && MyMotor::checkMotorAngleDelta(m1, m2)){
     m1.computePID();
@@ -85,23 +102,26 @@ void loop()
 
 void printData(){
   Serial.print(millis());
-  Serial.print(" Target value: ");
+  Serial.print(" TV: ");
   Serial.print(target);
-  Serial.print(" | M1 Encoder: ");
+  Serial.print(" | ME1: ");
   Serial.print(m1.getPos());
-  Serial.print(" | M2 Encoder: ");
+  Serial.print(" | ME2: ");
   Serial.print(m2.getPos());
-  Serial.print(" | LinearPot1: ");
+  Serial.print(" | LP1: ");
   Serial.print(linearPot1.getData());
-  Serial.print(" | LinearPot2: ");
+  Serial.print(" | LP2: ");
   Serial.print(linearPot2.getData());
+  Serial.print(" | HE1: ");
+  Serial.print(hallEffect1);
+  Serial.print(" | HE2: ");
+  Serial.print(hallEffect2);
   Serial.println();
 }
 
 // ---------------------------------
 // SETUP
 
-// 32GB SD Module 
 void setupSDCard(){
   sd = SD_card();
   sd.setupSD();
@@ -135,6 +155,22 @@ void setupReadDataTimer(){
   MyTim->setOverflow(READ_DATA_TIMER_FREQ, HERTZ_FORMAT);
   MyTim->attachInterrupt(interruptReadData);
   MyTim->resume();
+}
+
+void setupHallEffect1(){
+  pinMode(HALL_EFFECT_1, INPUT);
+}
+
+void setupHallEffect2(){
+  pinMode(HALL_EFFECT_2, INPUT);
+}
+
+void updateHallEffectData(){
+  if(READ_FLAG){
+    hallEffect1 = analogRead(HALL_EFFECT_1);
+    hallEffect2 = analogRead(HALL_EFFECT_2);
+    READ_FLAG = false;
+  }
 }
 
 // Create and setup Motor 1

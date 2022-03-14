@@ -19,6 +19,8 @@ const char TESTFILE[9] = "testfile";
 #define LOADCELL_SCK_PIN        PB10
 
 #define SD_BEGIN_PIN            PA4
+#define HALL_EFFECT_1   PA4 
+#define HALL_EFFECT_2   PA5
 
 
 // VARIABLES

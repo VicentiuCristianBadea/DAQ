@@ -25,7 +25,6 @@ void LinearPot::updateLinearPotData(LinearPot* l1, LinearPot* l2){
     if(READ_FLAG){
         l1->setData(analogRead(l1->getPin()));
         l2->setData(analogRead(l2->getPin()));
-        READ_FLAG = false;
     }
 }
 
