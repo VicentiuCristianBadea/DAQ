@@ -21,16 +21,16 @@ int LinearPot::getPin(){
     return pin;
 }
 
-void LinearPot::updateLinearPotData(LinearPot l1, LinearPot l2){
+void LinearPot::updateLinearPotData(LinearPot* l1, LinearPot* l2){
     if(READ_FLAG){
-        l1.setData(analogRead(l1.getPin()));
-        l2.setData(analogRead(l2.getPin()));
+        l1->setData(analogRead(l1->getPin()));
+        l2->setData(analogRead(l2->getPin()));
         READ_FLAG = false;
     }
 }
 
-boolean LinearPot::checkLinearPotDelta(LinearPot l1, LinearPot l2){
-    if(abs(l1.getData() - l2.getData()) > MAX_LINEAR_POT_DELTA){
+boolean LinearPot::checkLinearPotDelta(LinearPot* l1, LinearPot* l2){
+    if(abs(l1->getData() - l2->getData()) > MAX_LINEAR_POT_DELTA){
         return false;
     }
     return true;

@@ -6,8 +6,8 @@ class LinearPot{
         void setupLinearPot(const int);
         int getData();
 
-        static void updateLinearPotData(LinearPot, LinearPot);
-        static boolean checkLinearPotDelta(LinearPot, LinearPot);
+        static void updateLinearPotData(LinearPot*, LinearPot*);
+        static boolean checkLinearPotDelta(LinearPot*, LinearPot*);
 
     private:
         void setData(int);

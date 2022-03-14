@@ -62,7 +62,7 @@ void setup()
   setupReadDataTimer();
 
   /*  Setup modules */
-  setupSDCard();
+  // setupSDCard();
   setupMotor1();
   setupMotor2();
   setupLinearPot1();
@@ -73,9 +73,9 @@ void setup()
 void loop()
 {
   DriverInput::updateDriverInput(driverInput);
-  LinearPot::updateLinearPotData(linearPot1, linearPot2);
+  LinearPot::updateLinearPotData(&linearPot1, &linearPot2);
   
-  if(LinearPot::checkLinearPotDelta(linearPot1, linearPot2) && MyMotor::checkMotorAngleDelta(m1, m2)){
+  if(LinearPot::checkLinearPotDelta(&linearPot1, &linearPot2) && MyMotor::checkMotorAngleDelta(m1, m2)){
     m1.computePID();
     m2.computePID();
   }
