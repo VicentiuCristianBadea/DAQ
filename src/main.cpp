@@ -67,7 +67,7 @@ int hallEffect2 = 0;
 void setup()
 {
   /*  Application  */
-  pinMode(PC13, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
 
   /*  Fix baudrate  */
   Serial.begin(115200);
