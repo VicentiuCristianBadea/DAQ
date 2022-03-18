@@ -28,6 +28,7 @@ const char TESTFILE[9] = "testfile";
 
 #define TIMEOUT             1000
 #define TIMER               1000
+#define LED_PIN             PC13
 
 // SD
 #define INIT_DELAY          1000
