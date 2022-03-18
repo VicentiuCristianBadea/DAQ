@@ -34,7 +34,8 @@ void updateHallEffectData();
 
 boolean checkLinearPotDelta();
 
-void printData();
+void printDataSerial();
+void printDataPlotter();
 
 // CALLBACK PROTOTYPES
 void m1ReadEncoder();
@@ -92,30 +93,52 @@ void loop()
   LinearPot::updateLinearPotData(&linearPot1, &linearPot2);
   updateHallEffectData();
   
-  if(LinearPot::checkLinearPotDelta(&linearPot1, &linearPot2) && MyMotor::checkMotorAngleDelta(m1, m2)){
+  // if(LinearPot::checkLinearPotDelta(&linearPot1, &linearPot2, &m1, &m2) && MyMotor::checkMotorAngleDelta(m1, m2)){
+  //   m1.computePID();
+  //   m2.computePID();
+  // }
+
+  if(LinearPot::checkLinearPotDelta(&linearPot1, &linearPot2, &m1, &m2)){
     m1.computePID();
     m2.computePID();
   }
 
-  printData();
+  printDataPlotter();
 }
 
-void printData(){
-  Serial.print(millis());
-  Serial.print(" TV: ");
+void printDataSerial(){
+  // Serial.print(millis());
+  Serial.print(" TV ");
   Serial.print(target);
-  Serial.print(" | ME1: ");
+  Serial.print(", ME1 ");
   Serial.print(m1.getPos());
-  Serial.print(" | ME2: ");
+  Serial.print(", ME2 ");
   Serial.print(m2.getPos());
-  Serial.print(" | LP1: ");
+  Serial.print(", LP1 ");
   Serial.print(linearPot1.getData());
-  Serial.print(" | LP2: ");
+  Serial.print(", LP2 ");
   Serial.print(linearPot2.getData());
-  Serial.print(" | HE1: ");
+  Serial.print(", HE1 ");
   Serial.print(hallEffect1);
-  Serial.print(" | HE2: ");
+  Serial.print(", HE2 ");
   Serial.print(hallEffect2);
+  Serial.println();
+}
+
+void printDataPlotter(){
+  Serial.print(target);
+  Serial.print(",");
+  Serial.print(m1.getPos());
+  Serial.print(",");
+  Serial.print(m2.getPos());
+  Serial.print(",");
+  Serial.print(linearPot1.getData());
+  Serial.print(",");
+  Serial.print(linearPot2.getData());
+  // Serial.print(",");
+  // Serial.print(hallEffect1);
+  // Serial.print(",");
+  // Serial.print(hallEffect2);
   Serial.println();
 }
 

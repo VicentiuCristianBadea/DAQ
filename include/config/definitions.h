@@ -38,7 +38,7 @@ const char TESTFILE[9] = "testfile";
 #define READ_DATA_TIMER TIM4
 
 // LINEAR POTS
-#define MAX_LINEAR_POT_DELTA 600
+#define MAX_LINEAR_POT_DELTA 200
 const int l1_pin = PA0;
 const int l2_pin = PA1;
 
@@ -66,7 +66,7 @@ const int m2_encoder_B = PB2;
 
 // PID 
 #define kp 15  //  Try changing kp to 5 to reduce jitter
-#define kd 1
+#define kd 2
 #define ki 0.2   //  Try changing ki to 10 to provide more power
 
 #define PID_MAXPOWER 255

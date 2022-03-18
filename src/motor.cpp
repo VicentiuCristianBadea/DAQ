@@ -60,7 +60,8 @@ void MyMotor::computePID(){
   float deltaT = ((float)(currT-prevT))/1.0e6;
   prevT = currT;
   int e = getError();
-  float dedt = (e - eprev)/(deltaT); //  Error rate of change 
+  float dedt = (e - eprev)/(deltaT); //  Error rate of change
+
   eintegral = eintegral + e*deltaT;
   float u = kp*e + kd*dedt + ki*eintegral; //  Control signal
 
@@ -82,8 +83,8 @@ void MyMotor::subPos(){
 }
 
 void MyMotor::pauseMotor(){
-  timerLeft->pause();
-  timerRight->pause();
+  timerLeft->pauseChannel(channelLeft);
+  timerRight->pauseChannel(channelRight);
 }
 
 float MyMotor::PIDlimitPower(float power){

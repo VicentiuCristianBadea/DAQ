@@ -9,7 +9,6 @@
 class MyMotor{
 
     public:
-
         void setupMotor(int, int, int, int, int);
         void setMotor(int, int);
         void computePID();
@@ -19,14 +18,14 @@ class MyMotor{
         int getPos();
         int getEncoderA();
         int getEncoderB();
-        
+        void pauseMotor();
+
         static boolean checkMotorAngleDelta(MyMotor m1, MyMotor m2);
 
     private:
 
         void setupMotorTimers();
         void setupMotorPins();
-        void pauseMotor();
         
         int getError();
         int PIDgetDirection(float);
