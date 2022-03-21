@@ -7,7 +7,7 @@
 
 using namespace std;
 
-void LoadCell::setupLoadCell(int dout_pin, int sck_pin, int timeout){
+void LoadCell::setup(int dout_pin, int sck_pin, int timeout){
     _dout_pin = dout_pin;
     _sck_pin = sck_pin;
     _timeout = timeout;

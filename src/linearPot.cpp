@@ -5,7 +5,7 @@
 #include "config/globals.h"
 #include "motor.h"
 
-void LinearPot::setupLinearPot(const int pin_){
+void LinearPot::setup(const int pin_){
     pin = pin_;
     pinMode(pin_, INPUT);
 }
@@ -22,7 +22,7 @@ int LinearPot::getPin(){
     return pin;
 }
 
-void LinearPot::updateLinearPotData(LinearPot* l1, LinearPot* l2){
+void LinearPot::update(LinearPot* l1, LinearPot* l2){
     if(READ_FLAG){
         l1->setData(analogRead(l1->getPin()));
         l2->setData(analogRead(l2->getPin()));

@@ -10,6 +10,8 @@
 #include "motor.h"
 #include "linearPot.h"
 #include "driverInput.h"
+#include "hallEffect.h"
+#include "sensor.h"
 
 #include "config/definitions.h"
 #include "config/globals.h"
@@ -50,6 +52,8 @@ Data data;
 LinearPot linearPot1;
 LinearPot linearPot2;
 DriverInput driverInput;
+HallEffect hallEffect1; 
+HallEffect hallEffect2;
 
 // INIT GLOBALS
 int target = 0;
@@ -60,10 +64,6 @@ char buffer[1000][100];
 // MOTOR POT DATA
 float EMA_a = 0.1;
 int EMA_S = 0;
-
-// HALL EFFECT DATA
-int hallEffect1 = 0;
-int hallEffect2 = 0;
 
 void setup()
 {
@@ -85,18 +85,18 @@ void setup()
   setupHallEffect1();
   setupHallEffect2();
   setupDriverInput();
+
+  m1.setMotorToZero(&hallEffect1);
+  m2.setMotorToZero(&hallEffect2);
 }
 
 void loop()
 {
-  DriverInput::updateDriverInput(driverInput);
-  LinearPot::updateLinearPotData(&linearPot1, &linearPot2);
-  updateHallEffectData();
-  
-  // if(LinearPot::checkLinearPotDelta(&linearPot1, &linearPot2, &m1, &m2) && MyMotor::checkMotorAngleDelta(m1, m2)){
-  //   m1.computePID();
-  //   m2.computePID();
-  // }
+  driverInput.update();
+  hallEffect1.update();
+  hallEffect2.update();
+  LinearPot::update(&linearPot1, &linearPot2);
+  READ_FLAG = false;
 
   if(LinearPot::checkLinearPotDelta(&linearPot1, &linearPot2, &m1, &m2)){
     m1.computePID();
@@ -119,9 +119,9 @@ void printDataSerial(){
   Serial.print(", LP2 ");
   Serial.print(linearPot2.getData());
   Serial.print(", HE1 ");
-  Serial.print(hallEffect1);
+  Serial.print(hallEffect1.getData());
   Serial.print(", HE2 ");
-  Serial.print(hallEffect2);
+  Serial.print(hallEffect2.getData());
   Serial.println();
 }
 
@@ -135,10 +135,10 @@ void printDataPlotter(){
   Serial.print(linearPot1.getData());
   Serial.print(",");
   Serial.print(linearPot2.getData());
-  // Serial.print(",");
-  // Serial.print(hallEffect1);
-  // Serial.print(",");
-  // Serial.print(hallEffect2);
+  Serial.print(",");
+  Serial.print(hallEffect1.getData());
+  Serial.print(",");
+  Serial.print(hallEffect2.getData());
   Serial.println();
 }
 
@@ -153,19 +153,19 @@ void setupSDCard(){
 // Driver adjustable rotary potentiometer
 void setupDriverInput(){
   driverInput = DriverInput();
-  driverInput.setupDriverInput(di_pin);
+  driverInput.setup(di_pin);
 }
 
 // Linear Potentiometer on Shock 1
 void setupLinearPot1(){
   linearPot1 = LinearPot();
-  linearPot1.setupLinearPot(l1_pin);
+  linearPot1.setup(l1_pin);
 }
 
 // Linear Potentiometer on Shock 2
 void setupLinearPot2(){
   linearPot2 = LinearPot();
-  linearPot2.setupLinearPot(l2_pin);
+  linearPot2.setup(l2_pin);
 }
 
 //  Create and set timer to set READ_FLAG to true 
@@ -181,32 +181,26 @@ void setupReadDataTimer(){
 }
 
 void setupHallEffect1(){
-  pinMode(HALL_EFFECT_1, INPUT);
+  hallEffect1 = HallEffect();
+  hallEffect1.setup(HALL_EFFECT_1);
 }
 
 void setupHallEffect2(){
-  pinMode(HALL_EFFECT_2, INPUT);
-}
-
-void updateHallEffectData(){
-  if(READ_FLAG){
-    hallEffect1 = analogRead(HALL_EFFECT_1);
-    hallEffect2 = analogRead(HALL_EFFECT_2);
-    READ_FLAG = false;
-  }
+  hallEffect2 = HallEffect();
+  hallEffect2.setup(HALL_EFFECT_2);
 }
 
 // Create and setup Motor 1
 void setupMotor1(){
   m1 = MyMotor();
-  m1.setupMotor(m1_motorPin, m1_left, m1_right, m1_encoder_A, m1_encoder_B);
+  m1.setup(m1_motorPin, m1_left, m1_right, m1_encoder_A, m1_encoder_B);
   attachInterrupt(digitalPinToInterrupt(m1.getEncoderA()), m1ReadEncoder, RISING);
 }
 
 // Create and setup Motor 2
 void setupMotor2(){
   m2 = MyMotor();
-  m2.setupMotor(m2_motorPin, m2_left, m2_right, m2_encoder_A, m2_encoder_B);
+  m2.setup(m2_motorPin, m2_left, m2_right, m2_encoder_A, m2_encoder_B);
   attachInterrupt(digitalPinToInterrupt(m2.getEncoderA()), m2ReadEncoder, RISING);
 }
 

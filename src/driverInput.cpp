@@ -5,16 +5,16 @@
 #include "config/globals.h"
 
 
-void DriverInput::setupDriverInput(int pin_){
+void DriverInput::setup(int pin_){
     pin = pin_;
     pinMode(pin_, INPUT);
 }
 
-void DriverInput::updateDriverInput(DriverInput di){
+void DriverInput::update(){
     if(READ_FLAG){
         int driverInput = 0;
         for(int i = 0; i<5; i++){
-            driverInput += analogRead(di.getPin());
+            driverInput += analogRead(getPin());
         }
         driverInput = driverInput/5;
         int mapped = map(driverInput, 0, 200, 0, 90);

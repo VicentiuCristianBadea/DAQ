@@ -15,7 +15,8 @@
     "limits": "cpp",
     "functional": "cpp",
     "istream": "c",
-    "typeinfo": "c"
+    "typeinfo": "c",
+    "ostream": "cpp"
   },
   "C_Cpp_Runner.cStandard": "c11",
   "C_Cpp_Runner.cppStandard": "c++14",

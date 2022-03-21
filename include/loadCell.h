@@ -12,7 +12,7 @@ class LoadCell
 
     public:
 
-        void setupLoadCell(int, int, int);
+        void setup(int, int, int);
         void loadCellBegin();
         void calibrate();
         double readLoadDouble();

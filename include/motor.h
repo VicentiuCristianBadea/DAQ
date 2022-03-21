@@ -5,11 +5,12 @@
 #include <Wire.h>
 
 #include "data.h"
+#include "hallEffect.h"
 
 class MyMotor{
 
     public:
-        void setupMotor(int, int, int, int, int);
+        void setup(int, int, int, int, int);
         void setMotor(int, int);
         void computePID();
         void addPos();
@@ -19,6 +20,7 @@ class MyMotor{
         int getEncoderA();
         int getEncoderB();
         void pauseMotor();
+        void setMotorToZero(HallEffect*);
 
         static boolean checkMotorAngleDelta(MyMotor m1, MyMotor m2);
 
@@ -26,6 +28,8 @@ class MyMotor{
 
         void setupMotorTimers();
         void setupMotorPins();
+        void resetEncoder();
+
         
         int getError();
         int PIDgetDirection(float);

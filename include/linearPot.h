@@ -5,10 +5,10 @@
 
 class LinearPot{
     public:
-        void setupLinearPot(const int);
+        void setup(const int);
         int getData();
 
-        static void updateLinearPotData(LinearPot*, LinearPot*);
+        static void update(LinearPot*, LinearPot*);
         static boolean checkLinearPotDelta(LinearPot*, LinearPot*, MyMotor*, MyMotor*);
 
     private:

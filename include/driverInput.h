@@ -3,11 +3,10 @@
 
 class DriverInput{
     public:
-        void setupDriverInput(int);
+        void setup(const int);
         int getPin();
-
-        static void updateDriverInput(DriverInput);
-
+        void update();
+        
     private:
         int pin;
 };

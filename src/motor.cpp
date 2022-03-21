@@ -5,10 +5,11 @@
 
 #include "config/definitions.h"
 #include "config/globals.h"
+#include "hallEffect.h"
 
 using namespace std;
 
-void MyMotor::setupMotor(const int mp, const int lp, const int rp, const int eA, const int eB){
+void MyMotor::setup(const int mp, const int lp, const int rp, const int eA, const int eB){
   motorPin = mp;
   leftPin = lp;
   rightPin = rp;
@@ -53,6 +54,24 @@ void MyMotor::setMotor(int dir, int pwr){
       timerLeft->pauseChannel(channelLeft);
       timerRight->pauseChannel(channelRight);
   }
+}
+
+void MyMotor::setMotorToZero(HallEffect* hallEffect){
+  analogWrite(motorPin, 100);
+  timerLeft->pauseChannel(channelLeft);
+  timerRight->resume();
+  hallEffect->setData(analogRead(hallEffect->getPin()));
+  while(hallEffect->getData() > 15){
+    // Keep turning until magnet and hall effect air gap minimized
+    hallEffect->update();
+  }
+
+  pauseMotor();
+  resetEncoder();
+}
+
+void MyMotor::resetEncoder(){
+  pos = 0;
 }
 
 void MyMotor::computePID(){
