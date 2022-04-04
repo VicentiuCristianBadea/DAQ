@@ -17,7 +17,7 @@ void MyMotor::setup(const int mp, const int lp, const int rp, const int eA, cons
   encoderB = eB;
   pos, prevT, eprev, eintegral = 0;
 
-  setupMotorTimers();
+  // setupMotorTimers();
   setupMotorPins();
 }
 
@@ -33,7 +33,9 @@ void MyMotor::setupMotorTimers(){
   timerRight->setPWM(channelRight, rightPin, 1000, 100);
   timerRight->pauseChannel(channelRight);
   timerLeft->setPWM(channelLeft, leftPin, 1000, 100);
+  timerLeft->pauseChannel(channelLeft);
 }
+
 
 void MyMotor::setupMotorPins(){
   pinMode(motorPin, OUTPUT);
@@ -42,29 +44,49 @@ void MyMotor::setupMotorPins(){
   pinMode(encoderB, INPUT);
 }
 
+// void MyMotor::setMotor(int dir, int pwr){
+//   analogWrite(motorPin, pwr);
+//   if(dir == turnClockWise){   // Turn right
+//       timerLeft->pauseChannel(channelLeft);
+//       timerRight->resume();
+//   }else if(dir == turnCounterClockWise){ //Turn left
+//       timerRight->pauseChannel(channelRight);
+//       timerLeft->resume();
+//   }else{
+//       timerLeft->pauseChannel(channelLeft);
+//       timerRight->pauseChannel(channelRight);
+//   }
+// }
+
 void MyMotor::setMotor(int dir, int pwr){
   analogWrite(motorPin, pwr);
-  if(dir == turnClockWise){   // Turn right
-      timerLeft->pauseChannel(channelLeft);
-      timerRight->resume();
-  }else if(dir == turnCounterClockWise){ //Turn left
-      timerRight->pauseChannel(channelRight);
-      timerLeft->resume();
-  }else{
-      timerLeft->pauseChannel(channelLeft);
-      timerRight->pauseChannel(channelRight);
+  if(dir == turnClockWise){
+    analogWrite(leftPin, 0);
+    analogWrite(rightPin, 255);
+  }else if(dir == turnCounterClockWise){
+    analogWrite(rightPin, 0);
+    analogWrite(leftPin, 255);
   }
 }
 
 void MyMotor::setMotorToZero(HallEffect* hallEffect){
-  analogWrite(motorPin, 100);
-  timerLeft->pauseChannel(channelLeft);
-  timerRight->resume();
+  analogWrite(motorPin, PID_MAXPOWER);
+  // timerLeft->pauseChannel(channelLeft);
+  // timerRight->resume();
+  analogWrite(leftPin, 0);
+  analogWrite(rightPin, PID_MAXPOWER);
   hallEffect->setData(analogRead(hallEffect->getPin()));
   while(hallEffect->getData() > 15){
     // Keep turning until magnet and hall effect air gap minimized
     hallEffect->update();
   }
+
+
+  // KEEP MOVING UNTIL GAP MINIMIZED
+
+  // resetEncoder();
+  // while(getPos() < 10){
+  // }
 
   pauseMotor();
   resetEncoder();
@@ -88,6 +110,7 @@ void MyMotor::computePID(){
   pwr = PIDlimitPower(pwr);
   
   int dir = PIDgetDirection(u);
+  // int dir = -1;
 
   setMotor(dir, pwr);
   eprev = e;
@@ -97,13 +120,23 @@ void MyMotor::addPos(){
   pos++;
 }
 
+void MyMotor::addPos2(){
+  pos += 0.33;
+}
+
 void MyMotor::subPos(){
   pos--;
 }
 
+void MyMotor::subPos2(){
+  pos -= 0.33;
+}
+
 void MyMotor::pauseMotor(){
-  timerLeft->pauseChannel(channelLeft);
-  timerRight->pauseChannel(channelRight);
+  // timerLeft->pauseChannel(channelLeft);
+  // timerRight->pauseChannel(channelRight);
+  analogWrite(leftPin, 0);
+  analogWrite(rightPin, 0);
 }
 
 float MyMotor::PIDlimitPower(float power){

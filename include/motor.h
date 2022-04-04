@@ -15,6 +15,9 @@ class MyMotor{
         void computePID();
         void addPos();
         void subPos();
+
+        void addPos2();
+        void subPos2();
         
         int getPos();
         int getEncoderA();
@@ -40,7 +43,7 @@ class MyMotor{
         uint32_t channelLeft;
         uint32_t channelRight;
 
-        int pos;
+        float pos;
         long prevT;
         float eprev;
         float eintegral;

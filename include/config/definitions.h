@@ -19,8 +19,8 @@ const char TESTFILE[9] = "testfile";
 #define LOADCELL_SCK_PIN        PB10
 
 #define SD_BEGIN_PIN            PA4
-#define HALL_EFFECT_1   PA4 
-#define HALL_EFFECT_2   PA5
+#define HALL_EFFECT_1   PA5 
+#define HALL_EFFECT_2   PA4
 
 
 // VARIABLES
@@ -50,8 +50,8 @@ const int di_pin = PB1;
 const int m1_left = PB3;
 const int m1_right = PB4;
 const int m1_motorPin = PA15;
-const int m1_encoder_A = PA2;
-const int m1_encoder_B = PA3;
+const int m1_encoder_A = PA3;
+const int m1_encoder_B = PA2;
 
 const int motorSpeed = 255;
 #define turnClockWise 1
@@ -62,13 +62,13 @@ const int motorSpeed = 255;
 const int m2_left = PB15;
 const int m2_right = PB13;
 const int m2_motorPin = PB14;
-const int m2_encoder_A = PB0;
-const int m2_encoder_B = PB2;
+const int m2_encoder_A = PB2;
+const int m2_encoder_B = PB0;
 
 // PID 
-#define kp 15  //  Try changing kp to 5 to reduce jitter
+#define kp 5  
 #define kd 2
-#define ki 0.2   //  Try changing ki to 10 to provide more power
+#define ki 0.2   
 
 #define PID_MAXPOWER 255
 

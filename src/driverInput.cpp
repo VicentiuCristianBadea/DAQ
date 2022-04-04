@@ -17,7 +17,7 @@ void DriverInput::update(){
             driverInput += analogRead(getPin());
         }
         driverInput = driverInput/5;
-        int mapped = map(driverInput, 0, 200, 0, 90);
+        int mapped = map(driverInput, 0, 1023, 0, 90);
         if(mapped > 90){
             mapped = 90;
         }

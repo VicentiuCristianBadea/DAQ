@@ -88,7 +88,7 @@ void setup()
 
   m1.setMotorToZero(&hallEffect1);
   m2.setMotorToZero(&hallEffect2);
-}
+} 
 
 void loop()
 {
@@ -96,14 +96,15 @@ void loop()
   hallEffect1.update();
   hallEffect2.update();
   LinearPot::update(&linearPot1, &linearPot2);
+  if(READ_FLAG){
+    printDataPlotter();
+  }
   READ_FLAG = false;
 
   if(LinearPot::checkLinearPotDelta(&linearPot1, &linearPot2, &m1, &m2)){
     m1.computePID();
     m2.computePID();
   }
-
-  printDataPlotter();
 }
 
 void printDataSerial(){
@@ -126,6 +127,8 @@ void printDataSerial(){
 }
 
 void printDataPlotter(){
+  Serial.print(millis());
+  Serial.print(",");
   Serial.print(target);
   Serial.print(",");
   Serial.print(m1.getPos());
@@ -216,10 +219,10 @@ void interruptReadData(){
 void m1ReadEncoder(){
   int b = digitalRead(m1.getEncoderB());
   if(b>0){
-      m1.addPos();
+      m1.addPos2();
   }
   else{
-      m1.subPos();
+      m1.subPos2();
   }
 }
 
